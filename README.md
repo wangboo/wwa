@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Welcome to Revel
 
 ## Getting Started
@@ -73,3 +74,7 @@ test
 We encourage you to contribute to Revel! Please check out the [Contributing to Revel
 guide](https://github.com/revel/revel/blob/master/CONTRIBUTING.md) for guidelines about how
 to proceed. [Join us](https://groups.google.com/forum/#!forum/revel-framework)!
+=======
+# wwa
+go arena server
+>>>>>>> dfacb544170969206ad3fc4ea7b64da0b32daab7
