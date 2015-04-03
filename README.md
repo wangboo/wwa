@@ -1,0 +1,2 @@
+# wwa
+go arena server
