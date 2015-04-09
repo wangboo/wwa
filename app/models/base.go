@@ -53,5 +53,6 @@ func InitRedis() {
 	if err != nil {
 		panic(fmt.Sprintf("redis连接错误", err.Error()))
 	}
+	log.Println("Init redis success!!!")
 	Redis = conn
 }

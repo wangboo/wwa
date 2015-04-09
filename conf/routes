@@ -13,6 +13,18 @@ GET     /favicon.ico                            404
 GET     /public/*filepath                       Static.Serve("public")
 
 GET /wwa/top50/:id  ArenaCtrl.TopFifty
+# 获得或者消费积分
+GET /wwa/getScore  ArenaCtrl.GetScore
+# 获取玩家队伍信息
+GET /wwa/gi ArenaCtrl.GroupInfo
+# 战斗信息
+GET /wwa/gd ArenaCtrl.GroupData
+#获取我的竞技场类型
+GET /wwa/rankType ArenaCtrl.RankType
+
+GET /wwa/bi ArenaCtrl.BaseInfo
+
+get /job/resetRank ArenaCtrl.ResetRank
 
 # Catch all
 *       /:controller/:action                    :controller.:action

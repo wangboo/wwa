@@ -2,9 +2,9 @@ package app
 
 import (
 	// "fmt"
-	// "github.com/revel/modules/jobs/app/jobs"
+	"github.com/revel/modules/jobs/app/jobs"
 	"github.com/revel/revel"
-	// "github.com/wangboo/wwa/app/jobs"
+	"github.com/wangboo/wwa/app/jobs"
 	"github.com/wangboo/wwa/app/models"
 )
 
@@ -25,14 +25,11 @@ func init() {
 		revel.ActionInvoker,     // Invoke the action.
 	}
 	// register startup functions with OnAppStart
-	// ( order dependent )
-	// revel.OnAppStart(InitDB)
-	// revel.OnAppStart(FillCache)
 	revel.OnAppStart(models.InitGameServerConfig)
 	revel.OnAppStart(models.InitDatabase)
 	revel.OnAppStart(models.InitRedis)
 	revel.OnAppStart(func() {
-		// jobs.Schedule("0 15 4 * * ?", &TestJob{0})
+		jobs.Schedule("0 15 4 * * ?", &mjob.RankDataJob{})
 		// jobs.Now(&mjob.RankDataJob{})
 	})
 }
