@@ -29,7 +29,7 @@ func init() {
 	// revel.OnAppStart(InitDB)
 	// revel.OnAppStart(FillCache)
 	revel.OnAppStart(models.InitGameServerConfig)
-	revel.OnAppStart(models.InitDatabase)
+	// revel.OnAppStart(models.InitDatabase)
 	revel.OnAppStart(models.InitRedis)
 	revel.OnAppStart(func() {
 		// jobs.Schedule("0 15 4 * * ?", &TestJob{0})
