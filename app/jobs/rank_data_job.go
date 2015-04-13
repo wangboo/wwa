@@ -4,6 +4,7 @@ import (
 	// "github.com/revel/revel"
 	"encoding/json"
 	"fmt"
+	"github.com/garyburd/redigo/redis"
 	"github.com/wangboo/wwa/app/models"
 	"io/ioutil"
 	"log"
@@ -15,22 +16,24 @@ type RankDataJob struct {
 }
 
 func (r *RankDataJob) Run() {
+	cli := models.RedisPool.Get()
+	defer cli.Close()
 	fmt.Println("Run RankData Job")
 	// models.DB.Exec("delete from ranks")
 	// wwa_ 为 Sorted-set，存放着玩家竞技排名信息 score - 玩家详细信息
-	models.Redis.Do("DEL", "wwa_0")
-	models.Redis.Do("DEL", "wwa_1")
-	models.Redis.Do("DEL", "wwa_2")
+	cli.Do("DEL", "wwa_0")
+	cli.Do("DEL", "wwa_1")
+	cli.Do("DEL", "wwa_2")
 	// zone_user 为hash表，存放着k-v 内容为 (服务器编号-玩家编号)-(玩家详细信息)
-	models.Redis.Do("DEL", "zone_user")
+	cli.Do("DEL", "zone_user")
 	for _, s := range models.GameServerList {
-		SaveDataByServerAndType(&s, 0)
-		SaveDataByServerAndType(&s, 1)
-		SaveDataByServerAndType(&s, 2)
+		SaveDataByServerAndType(cli, &s, 0)
+		SaveDataByServerAndType(cli, &s, 1)
+		SaveDataByServerAndType(cli, &s, 2)
 	}
 }
 
-func SaveDataByServerAndType(s *models.GameServerConfig, t int) {
+func SaveDataByServerAndType(cli redis.Conn, s *models.GameServerConfig, t int) {
 	resp, err := http.Get(s.UserRankUrl(t))
 	if err != nil {
 		log.Panicf("获取%s访问失败！！\n", s.UserRankUrl(t))
@@ -48,7 +51,7 @@ func SaveDataByServerAndType(s *models.GameServerConfig, t int) {
 		rank.ZoneId = s.ZoneId
 		rank.ZoneName = s.Name
 		rank.Type = t
-		models.Redis.Do("ZADD", rank.ToRedisRankName(), models.RANK_SCORE_SUB, rank.ToSimpleKey())
-		models.Redis.Do("HSET", "zone_user", rank.ToSimpleKey(), rank.ToDetailKey())
+		cli.Do("ZADD", rank.ToRedisRankName(), models.RANK_SCORE_SUB, rank.ToSimpleKey())
+		cli.Do("HSET", "zone_user", rank.ToSimpleKey(), rank.ToDetailKey())
 	}
 }

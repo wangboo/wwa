@@ -7,12 +7,16 @@ import (
 	"github.com/revel/revel"
 	"github.com/wangboo/wwa/app/jobs"
 	"github.com/wangboo/wwa/app/models"
+	"log"
+	"math/rand"
 	"regexp"
 	"strconv"
+	"strings"
 )
 
 var (
-	GetScoreRegex = regexp.MustCompile(`^(\d+,)(\d+)(.*(\d+))$`)
+	GetScoreRegex = regexp.MustCompile(`^(\d+,)(\-{0,1}\d+)(.*(\d+))$`)
+	GetNameRegex  = regexp.MustCompile(`^(\d+,){3}(.*?),.*`)
 )
 
 type ArenaCtrl struct {
@@ -20,7 +24,9 @@ type ArenaCtrl struct {
 }
 
 func (c ArenaCtrl) GroupData(a, u int) revel.Result {
-	gi, err := models.Redis.Do("GET", models.GroupDataKey(u, a))
+	cli := models.RedisPool.Get()
+	defer cli.Close()
+	gi, err := cli.Do("GET", models.GroupDataKey(u, a))
 	if err != nil {
 		c.RenderText("redis err %v", err)
 	}
@@ -32,58 +38,89 @@ func (c ArenaCtrl) GroupData(a, u int) revel.Result {
 		return c.RenderText("")
 	}
 	sec := revel.Config.IntDefault("group_data_cache_time", 60)
-	models.Redis.Do("SETEX", models.GroupDataKey(u, a), sec, str)
+	cli.Do("SETEX", models.GroupDataKey(u, a), sec, str)
 	return c.RenderText(str)
 }
 
 func (c ArenaCtrl) TopFifty(id int) revel.Result {
-	allSimplyKeys, _ := redis.Strings(models.Redis.Do("ZRANGE", fmt.Sprintf("wwa_%d", id), 0, 49))
+	cli := models.RedisPool.Get()
+	defer cli.Close()
+	allSimplyKeys, _ := redis.Strings(cli.Do("ZRANGE", fmt.Sprintf("wwa_%d", id), 0, 49))
 	args := redis.Args{}
 	args = args.Add("zone_user")
 	for _, k := range allSimplyKeys {
 		args = args.Add(k)
 	}
-	fmt.Printf("args = %v \n", args)
-	all, err := redis.Strings(models.Redis.Do("HMGET", args...))
+	// log.Printf("args = %v \n", args)
+	all, err := redis.Strings(cli.Do("HMGET", args...))
 	if err != nil {
-		return c.RenderText("redis err", err.Error())
+		return c.RenderText("redis err %v", err.Error())
 	}
-	return c.RenderJson(all)
+	return c.RenderText(strings.Join(all, "-"))
 }
 
 // 获得积分 或者 消费积分
-func (c ArenaCtrl) GetScore(s, u, a int) revel.Result {
+func (c ArenaCtrl) FightResult(s, u, a, us, uu, ua int, win bool) revel.Result {
 	c.Validation.Required(s).Message("您必须提供 s:获得积分")
 	c.Validation.Required(u).Message("您必须提供 u:用户编号")
 	c.Validation.Required(a).Message("您必须提供 a:服务器编号")
-	c.Validation.Min(a, 0).Message("a:服务器编号必须大于0")
-	c.Validation.Min(s, 0).Message("s:获取积分必须大于0")
 	if c.Validation.HasErrors() {
 		return RenderValidationFail(c.Controller)
 	}
-	detail, err := models.Redis.Do("HGET", "zone_user", models.ToSimpleKey(a, u))
+	cli := models.RedisPool.Get()
+	defer cli.Close()
+	var myDetail string
+	myDetail, err := incrScore(cli, a, u, s)
 	if err != nil {
-		return c.RenderText("redis err %v", err)
+		return c.RenderText("redis err %s", err.Error())
 	}
-	if detail == nil {
-		return c.RenderText("user not exists")
+	log.Printf("win = %v\n", win)
+	if win {
+		// 对方扣分
+		if _, err := incrScore(cli, ua, uu, -us); err != nil {
+			return c.RenderText("redis err %s", err.Error())
+		}
+		server := models.FindGameServer(ua)
+		rst := GetNameRegex.FindStringSubmatch(myDetail)
+		content := fmt.Sprintf("你在跨服竞技中遭遇%d区-%s的突袭，将军被迫撤退，损失了%d点竞技积分。", a, rst[2], us)
+		fmt.Println("content", content)
+		go models.GetGameServer(server.MailUrl(ua, content))
 	}
-	fmt.Printf("%s\n", detail)
-	rst := GetScoreRegex.FindStringSubmatch(fmt.Sprintf("%s", detail))
+	return c.RenderText("ok")
+}
+
+// 玩家增加/扣除积分
+func incrScore(cli redis.Conn, a, u, s int) (string, error) {
+	detail, err := redis.String(cli.Do("HGET", "zone_user", models.ToSimpleKey(a, u)))
+	if err != nil {
+		return "", err
+	}
+	log.Printf("%s\n", detail)
+	rst := GetScoreRegex.FindStringSubmatch(detail)
 	score, _ := strconv.Atoi(rst[2])
 	newScore := score + s
+	if newScore < 0 {
+		newScore = 0
+	}
 	newStr := fmt.Sprintf("%s%d%s", rst[1], newScore, rst[3])
-	fmt.Println("save newStr : ", newStr)
+	log.Println("save newStr : ", newStr)
 	simpleKey := models.ToSimpleKey(a, u)
 	// 更新缓存数据
-	models.Redis.Do("HSET", "zone_user", simpleKey, newStr)
-	models.Redis.Do("ZADD", fmt.Sprintf("wwa_%s", rst[4]), fmt.Sprintf("%d", score-s), simpleKey)
-	return c.RenderText("%s", newStr)
+	cli.Do("HSET", "zone_user", simpleKey, newStr)
+	wwa := fmt.Sprintf("wwa_%s", rst[4])
+	rankScore := score - s
+	if rankScore > models.RANK_SCORE_SUB {
+		rankScore = models.RANK_SCORE_SUB
+	}
+	cli.Do("ZADD", wwa, fmt.Sprintf("%d", rankScore), simpleKey)
+	return newStr, nil
 }
 
 // 队伍信息
 func (c ArenaCtrl) GroupInfo(u, a int) revel.Result {
-	gi, err := models.Redis.Do("GET", models.GroupInfoKey(u, a))
+	cli := models.RedisPool.Get()
+	defer cli.Close()
+	gi, err := cli.Do("GET", models.GroupInfoKey(u, a))
 	if err != nil {
 		c.RenderText("redis err %v", err)
 	}
@@ -95,31 +132,37 @@ func (c ArenaCtrl) GroupInfo(u, a int) revel.Result {
 		return c.RenderText("")
 	}
 	sec := revel.Config.IntDefault("group_info_cache_time", 60)
-	models.Redis.Do("SETEX", models.GroupInfoKey(u, a), sec, str)
+	cli.Do("SETEX", models.GroupInfoKey(u, a), sec, str)
 	return c.RenderText(str)
 }
 
 // 基本信息
 func (c ArenaCtrl) BaseInfo(u, a int) revel.Result {
-	detail, err := models.Redis.Do("HGET", "zone_user", models.ToSimpleKey(a, u))
+	cli := models.RedisPool.Get()
+	defer cli.Close()
+	detail, err := cli.Do("HGET", "zone_user", models.ToSimpleKey(a, u))
 	if err != nil {
 		return c.RenderText("redis error", err.Error())
 	}
 	return c.RenderText("%s", detail)
 }
 
-func (c ArenaCtrl) RankType(u, a int) revel.Result {
+func (c ArenaCtrl) RankInfo(u, a int) revel.Result {
 	c.Validation.Required(u).Message("您必须提供 u:用户编号")
 	c.Validation.Required(a).Message("您必须提供 a:服务器编号")
 	if c.Validation.HasErrors() {
 		return RenderValidationFail(c.Controller)
 	}
-	detail, err := models.Redis.Do("HGET", "zone_user", models.ToSimpleKey(a, u))
+	cli := models.RedisPool.Get()
+	defer cli.Close()
+	simpleKey := models.ToSimpleKey(a, u)
+	detail, err := redis.String(cli.Do("HGET", "zone_user", simpleKey))
 	if err != nil {
 		return c.RenderText("redis error", err.Error())
 	}
-	rst := GetScoreRegex.FindStringSubmatch(fmt.Sprintf("%s", detail))
-	return c.RenderText("%s", rst[4])
+	rst := strings.Split(detail, ",")
+	rank, _ := cli.Do("ZRANK", fmt.Sprintf("wwa_%s", rst[9]), simpleKey)
+	return c.RenderText("%s,%d,%s", rst[9], rank, rst[1])
 }
 
 func (c ArenaCtrl) ResetRank(pwd string) revel.Result {
@@ -128,4 +171,74 @@ func (c ArenaCtrl) ResetRank(pwd string) revel.Result {
 	}
 	(&mjob.RankDataJob{}).Run()
 	return c.RenderText("success")
+}
+
+// 随机3名挑战对象
+func (c ArenaCtrl) RandFightUsers(u, a int) revel.Result {
+	cli := models.RedisPool.Get()
+	defer cli.Close()
+	simpleKey := models.ToSimpleKey(a, u)
+	detail, err := redis.String(cli.Do("HGET", "zone_user", simpleKey))
+	if err != nil {
+		return c.RenderText("redis error", err.Error())
+	}
+	// log.Printf("myself : %v \n", detail)
+	rst := GetScoreRegex.FindStringSubmatch(detail)
+	wwa := fmt.Sprintf("wwa_%s", rst[4])
+	rank, _ := redis.Int(cli.Do("ZRANK", wwa, simpleKey))
+	size, _ := redis.Int(cli.Do("ZCard", wwa))
+	ranks := make([]int, 3)
+	// 最高经验
+	if rank < 10 {
+		ranks[0] = getRandExcept(0, 10, rank)
+	} else {
+		ranks[0] = getRandExcept(rank-11, rank-1, rank)
+	}
+	// 中等
+	if ranks[0]+11 > size {
+		ranks[1] = getRandExcept(size-10, size-1, 0)
+	} else {
+		ranks[1] = getRandExcept(ranks[0], ranks[0]+10, 0)
+	}
+	// 低等
+	if ranks[1]+20 > size {
+		ranks[2] = getRandExcept(size-15, size-5, 0)
+	} else {
+		ranks[2] = getRandExcept(ranks[1]+1, ranks[1]+15, 0)
+	}
+	// fmt.Printf("ranks = %v, rank=%d, size=%d \n", ranks, rank, size)
+	rst0, _ := redis.Strings(cli.Do("ZRANGE", wwa, ranks[0], ranks[0]))
+	rst1, _ := redis.Strings(cli.Do("ZRANGE", wwa, ranks[1], ranks[1]))
+	rst2, _ := redis.Strings(cli.Do("ZRANGE", wwa, ranks[2], ranks[2]))
+	repl, _ := redis.Strings(cli.Do("HMGET", "zone_user", rst0[0], rst1[0], rst2[0]))
+	// log.Printf("repl : %v \n", repl)
+	return c.RenderText(strings.Join(repl, "-"))
+}
+
+func getRandExcept(start, end, except int) int {
+	mRange, n := end-start, 0
+	for {
+		if n = start + rand.Intn(mRange); n != except {
+			return n
+		}
+	}
+}
+
+func getThreeExcept(ranks []string, except string) []string {
+	size := len(ranks)
+	rst := []string{"", "", ""}
+	index := 0
+	num := ""
+	for {
+		num = ranks[rand.Intn(size)]
+		if rst[0] == num || rst[1] == num || rst[2] == num || num == except {
+			continue
+		}
+		rst[index] = num
+		if index == 2 {
+			break
+		}
+		index += 1
+	}
+	return rst
 }
