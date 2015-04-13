@@ -16,10 +16,13 @@ type RankDataJob struct {
 
 func (r *RankDataJob) Run() {
 	fmt.Println("Run RankData Job")
-	models.DB.Exec("delete from rank")
+	// models.DB.Exec("delete from ranks")
+	// wwa_ 为 Sorted-set，存放着玩家竞技排名信息 score - 玩家详细信息
 	models.Redis.Do("DEL", "wwa_0")
 	models.Redis.Do("DEL", "wwa_1")
 	models.Redis.Do("DEL", "wwa_2")
+	// zone_user 为hash表，存放着k-v 内容为 (服务器编号-玩家编号)-(玩家详细信息)
+	models.Redis.Do("DEL", "zone_user")
 	for _, s := range models.GameServerList {
 		SaveDataByServerAndType(&s, 0)
 		SaveDataByServerAndType(&s, 1)
@@ -39,13 +42,13 @@ func SaveDataByServerAndType(s *models.GameServerConfig, t int) {
 	if err != nil {
 		log.Panicln("SaveDataByServerAndType失败")
 	}
-	for index, r := range listOfRank {
+	for _, r := range listOfRank {
 		rank := &r
 		rank.Score = 0
 		rank.ZoneId = s.ZoneId
+		rank.ZoneName = s.Name
 		rank.Type = t
-		models.DB.Create(rank)
-		models.Redis.Do("ZADD", rank.ToRedisRankName(), 0, rank.ToRedisRankValue())
-		fmt.Printf("%d create rank %v \n", index, r)
+		models.Redis.Do("ZADD", rank.ToRedisRankName(), models.RANK_SCORE_SUB, rank.ToSimpleKey())
+		models.Redis.Do("HSET", "zone_user", rank.ToSimpleKey(), rank.ToDetailKey())
 	}
 }

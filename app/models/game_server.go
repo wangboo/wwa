@@ -12,6 +12,7 @@ type GameServerConfig struct {
 	Port   int    `port`
 	ZoneId int    `zoneId`
 	Domain string `domain`
+	Name   string `name`
 }
 
 // 每日刷新玩家基本数据url
@@ -24,6 +25,11 @@ func (g *GameServerConfig) GroupDataUrl(t int) string {
 	return fmt.Sprintf("http://%s:%d/%s/admin/wwa/gd?id=%d", g.Ip, g.Port, g.Domain, t)
 }
 
+// 获取玩家战斗Group数据
+func (g *GameServerConfig) GroupInfoUrl(t int) string {
+	return fmt.Sprintf("http://%s:%d/%s/admin/wwa/gi?id=%d", g.Ip, g.Port, g.Domain, t)
+}
+
 func (g GameServerConfig) String() string {
 	return fmt.Sprintf("ip=%s,port=%d,zoneId=%d\n", g.Ip, g.Port, g.ZoneId)
 }
@@ -31,6 +37,15 @@ func (g GameServerConfig) String() string {
 var (
 	GameServerList []GameServerConfig
 )
+
+func FindGameServer(zoneId int) *GameServerConfig {
+	for _, g := range GameServerList {
+		if g.ZoneId == zoneId {
+			return &g
+		}
+	}
+	return nil
+}
 
 func InitGameServerConfig() {
 	root, ok := revel.Config.String("root")
