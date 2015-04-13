@@ -1,19 +1,21 @@
 package models
 
 import (
-	"fmt"
 	"github.com/garyburd/redigo/redis"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
 	"github.com/revel/revel"
+	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
+	"time"
 )
 
 var DB *gorm.DB
 var db gorm.DB
 
-var Redis redis.Conn
+var RedisPool *redis.Pool
 
 type BaseModel struct {
 	Id int `gorm:"primary_key",sql:"AUTO_INCREMENT"`
@@ -25,6 +27,15 @@ func (b *BaseModel) NewRecord() bool {
 
 func (b *BaseModel) Destory() error {
 	return DB.Delete(b).Error
+}
+
+// 调用游戏服务器
+func GetGameServer(url string) ([]byte, error) {
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	return ioutil.ReadAll(resp.Body)
 }
 
 func InitDatabase() {
@@ -49,10 +60,20 @@ func InitDatabase() {
 func InitRedis() {
 	protocol := revel.Config.StringDefault("redis.protocol", "tcp")
 	address := revel.Config.StringDefault("redis.address", ":6379")
-	conn, err := redis.Dial(protocol, address)
-	if err != nil {
-		panic(fmt.Sprintf("redis连接错误", err.Error()))
+	RedisPool = &redis.Pool{
+		MaxIdle:     3,
+		MaxActive:   50,
+		IdleTimeout: 240 * time.Second,
+		Dial: func() (redis.Conn, error) {
+			c, err := redis.Dial(protocol, address)
+			if err != nil {
+				return nil, err
+			}
+			return c, err
+		},
+		TestOnBorrow: func(c redis.Conn, t time.Time) error {
+			_, err := c.Do("PING")
+			return err
+		},
 	}
-	log.Println("Init redis success!!!")
-	Redis = conn
 }

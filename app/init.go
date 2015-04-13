@@ -29,7 +29,12 @@ func init() {
 	// revel.OnAppStart(models.InitDatabase)
 	revel.OnAppStart(models.InitRedis)
 	revel.OnAppStart(func() {
+		// 日终竞技场排名清空
 		jobs.Schedule("0 15 4 * * ?", &mjob.RankDataJob{})
+		// 日终兑换清空
+		jobs.Schedule("0 0 0 * * ?", &mjob.ExchangeJob{})
+		// 跨服竞技场奖励
+		jobs.Schedule("45 22 0 * * ?", &mjob.DayEndRewardJob{})
 		// jobs.Now(&mjob.RankDataJob{})
 	})
 }

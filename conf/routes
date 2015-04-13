@@ -12,19 +12,30 @@ GET     /favicon.ico                            404
 # Map static resources from the /app/public folder to the /public path
 GET     /public/*filepath                       Static.Serve("public")
 
+# 随机3名挑战对象
+GET /wwa/fdata ArenaCtrl.RandFightUsers
+# 获取竞技场排名
 GET /wwa/top50/:id  ArenaCtrl.TopFifty
 # 获得或者消费积分
-GET /wwa/getScore  ArenaCtrl.GetScore
+GET /wwa/fr  ArenaCtrl.FightResult
 # 获取玩家队伍信息
 GET /wwa/gi ArenaCtrl.GroupInfo
 # 战斗信息
 GET /wwa/gd ArenaCtrl.GroupData
 #获取我的竞技场类型
-GET /wwa/rankType ArenaCtrl.RankType
-
+GET /wwa/ri ArenaCtrl.RankInfo
+# 玩家wwa基本信息
 GET /wwa/bi ArenaCtrl.BaseInfo
-
+# 充值每日竞技积分
 get /job/resetRank ArenaCtrl.ResetRank
+# 重新加载兑换配置文件
+get /ex/reload ExchangeCtrl.ReloadConfig
+# 重置每日兑换内容
+get /ex/reset ExchangeCtrl.ResetDailyExchange
+# 查询每日兑换内容
+get /ex ExchangeCtrl.DailyExchange
+
+get /test App.Test
 
 # Catch all
 *       /:controller/:action                    :controller.:action

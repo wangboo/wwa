@@ -34,6 +34,16 @@ func (g GameServerConfig) String() string {
 	return fmt.Sprintf("ip=%s,port=%d,zoneId=%d\n", g.Ip, g.Port, g.ZoneId)
 }
 
+// 通知游戏服务器发送邮件
+func (g *GameServerConfig) MailUrl(userId int, mail string) string {
+	return fmt.Sprintf("http://%s:%d/%s/admin/mail?u=%d&mail=%s", g.Ip, g.Port, g.Domain, userId, mail)
+}
+
+// 日终奖励
+func (g *GameServerConfig) DayEndWwaRewardUrl(str string, Type int) string {
+	return fmt.Sprintf("http://%s:%d/%s/admin/wwa/dayEndReward?t=%d&base64=%s", g.Ip, g.Port, g.Domain, Type, str)
+}
+
 var (
 	GameServerList []GameServerConfig
 )
