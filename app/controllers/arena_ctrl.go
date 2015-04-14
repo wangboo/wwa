@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/garyburd/redigo/redis"
 	// "github.com/revel/modules/jobs/app/jobs"
+	"encoding/base64"
 	"github.com/revel/revel"
 	"github.com/wangboo/wwa/app/jobs"
 	"github.com/wangboo/wwa/app/models"
@@ -84,7 +85,8 @@ func (c ArenaCtrl) FightResult(s, u, a, us, uu, ua int, win bool) revel.Result {
 		rst := GetNameRegex.FindStringSubmatch(myDetail)
 		content := fmt.Sprintf("你在跨服竞技中遭遇%d区-%s的突袭，将军被迫撤退，损失了%d点竞技积分。", a, rst[2], us)
 		fmt.Println("content", content)
-		go models.GetGameServer(server.MailUrl(ua, content))
+		contentBase64 := base64.StdEncoding.EncodeToString([]byte(content))
+		go models.GetGameServer(server.MailUrl(uu, contentBase64))
 	}
 	return c.RenderText("ok")
 }
