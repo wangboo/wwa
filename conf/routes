@@ -26,6 +26,8 @@ GET /wwa/gd ArenaCtrl.GroupData
 GET /wwa/ri ArenaCtrl.RankInfo
 # 玩家wwa基本信息
 GET /wwa/bi ArenaCtrl.BaseInfo
+# 新升级的用户
+GET /wwa/new ArenaCtrl.NewComer
 # 充值每日竞技积分
 get /job/resetRank ArenaCtrl.ResetRank
 # 重新加载兑换配置文件
@@ -34,6 +36,7 @@ get /ex/reload ExchangeCtrl.ReloadConfig
 get /ex/reset ExchangeCtrl.ResetDailyExchange
 # 查询每日兑换内容
 get /ex ExchangeCtrl.DailyExchange
+
 
 get /test App.Test
 

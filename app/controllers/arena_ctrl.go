@@ -142,7 +142,7 @@ func (c ArenaCtrl) BaseInfo(u, a int) revel.Result {
 	defer cli.Close()
 	detail, err := cli.Do("HGET", "zone_user", models.ToSimpleKey(a, u))
 	if err != nil {
-		return c.RenderText("redis error", err.Error())
+		return c.RenderText("redis error %v", err.Error())
 	}
 	return c.RenderText("%s", detail)
 }
@@ -158,7 +158,7 @@ func (c ArenaCtrl) RankInfo(u, a int) revel.Result {
 	simpleKey := models.ToSimpleKey(a, u)
 	detail, err := redis.String(cli.Do("HGET", "zone_user", simpleKey))
 	if err != nil {
-		return c.RenderText("redis error", err.Error())
+		return c.RenderText("redis error %s", err.Error())
 	}
 	rst := strings.Split(detail, ",")
 	rank, _ := cli.Do("ZRANK", fmt.Sprintf("wwa_%s", rst[9]), simpleKey)
@@ -241,4 +241,25 @@ func getThreeExcept(ranks []string, except string) []string {
 		index += 1
 	}
 	return rst
+}
+
+// 新升级的用户
+func (c ArenaCtrl) NewComer(a, u, pow, hero, q, lev int, name string) revel.Result {
+	cli := models.RedisPool.Get()
+	defer cli.Close()
+	rank := &models.Rank{
+		UserId: u,
+		Score:  0,
+		Level:  lev,
+		Name:   name,
+		Hero:   hero,
+		Q:      q,
+		Pow:    pow,
+		ZoneId: a,
+		Type:   0,
+	}
+	simpleKey := models.ToSimpleKey(a, u)
+	cli.Do("HSET", "zone_user", simpleKey, rank.ToDetailKey())
+	cli.Do("ZADD", "wwa_0", simpleKey, models.RANK_SCORE_SUB)
+	return c.RenderText("ok")
 }
