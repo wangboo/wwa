@@ -62,7 +62,7 @@ func GroupDataKey(zoneId, userId int) string {
 
 // 从游戏服务器获取队伍信息
 func GetGroupInfoFromGameServer(zoneId, userId int) string {
-	url := FindGameServer(zoneId).GroupInfoUrl(zoneId)
+	url := FindGameServer(zoneId).GroupInfoUrl(userId)
 	resp, err := http.Get(url)
 	if err != nil {
 		log.Printf("GetGroupInfoFromGameServer: 服务器%s无法访问", url)
@@ -78,7 +78,7 @@ func GetGroupInfoFromGameServer(zoneId, userId int) string {
 
 // 从游戏服务器获取队伍信息
 func GetGroupDataFromGameServer(zoneId, userId int) string {
-	url := FindGameServer(zoneId).GroupDataUrl(zoneId)
+	url := FindGameServer(zoneId).GroupDataUrl(userId)
 	resp, err := http.Get(url)
 	if err != nil {
 		log.Printf("GetGroupInfoFromGameServer: 服务器%s无法访问", url)
