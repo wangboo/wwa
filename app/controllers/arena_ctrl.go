@@ -8,7 +8,7 @@ import (
 	"github.com/revel/revel"
 	"github.com/wangboo/wwa/app/jobs"
 	"github.com/wangboo/wwa/app/models"
-	"log"
+	// "log"
 	"math/rand"
 	"regexp"
 	"sort"
