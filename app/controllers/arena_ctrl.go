@@ -11,6 +11,7 @@ import (
 	"log"
 	"math/rand"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -22,6 +23,23 @@ var (
 
 type ArenaCtrl struct {
 	*revel.Controller
+}
+
+// DetailKey排序
+type SortDetailByLevel []string
+
+func (s SortDetailByLevel) Len() int {
+	return len(s)
+}
+
+func (s SortDetailByLevel) Swap(a, b int) {
+	s[a], s[b] = s[b], s[a]
+}
+
+func (s SortDetailByLevel) Less(a, b int) bool {
+	intA, _ := strconv.Atoi(strings.Split(s[a], ",")[2])
+	intB, _ := strconv.Atoi(strings.Split(s[b], ",")[2])
+	return intA >= intB
 }
 
 func (c ArenaCtrl) GroupData(a, u int) revel.Result {
@@ -75,7 +93,7 @@ func (c ArenaCtrl) FightResult(s, u, a, us, uu, ua int, win bool) revel.Result {
 	if err != nil {
 		return c.RenderText("redis err %s", err.Error())
 	}
-	log.Printf("win = %v\n", win)
+	// log.Printf("win = %v\n", win)
 	if win {
 		// 对方扣分
 		if _, err := incrScore(cli, ua, uu, -us); err != nil {
@@ -97,7 +115,7 @@ func incrScore(cli redis.Conn, a, u, s int) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	log.Printf("%s\n", detail)
+	// log.Printf("%s\n", detail)
 	rst := GetScoreRegex.FindStringSubmatch(detail)
 	score, _ := strconv.Atoi(rst[2])
 	newScore := score + s
@@ -105,7 +123,7 @@ func incrScore(cli redis.Conn, a, u, s int) (string, error) {
 		newScore = 0
 	}
 	newStr := fmt.Sprintf("%s%d%s", rst[1], newScore, rst[3])
-	log.Println("save newStr : ", newStr)
+	// log.Println("save newStr : ", newStr)
 	simpleKey := models.ToSimpleKey(a, u)
 	// 更新缓存数据
 	cli.Do("HSET", "zone_user", simpleKey, newStr)
@@ -201,13 +219,13 @@ func (c ArenaCtrl) RandFightUsers(u, a int) revel.Result {
 	if ranks[0]+11 > size {
 		ranks[1] = getRandExcept(size-10, size-1, 0)
 	} else {
-		ranks[1] = getRandExcept(ranks[0], ranks[0]+10, 0)
+		ranks[1] = getRandExcept(ranks[0]+1, ranks[0]+10, rank)
 	}
 	// 低等
 	if ranks[1]+20 > size {
 		ranks[2] = getRandExcept(size-15, size-5, 0)
 	} else {
-		ranks[2] = getRandExcept(ranks[1]+1, ranks[1]+15, 0)
+		ranks[2] = getRandExcept(ranks[1]+1, ranks[1]+15, rank)
 	}
 	// fmt.Printf("ranks = %v, rank=%d, size=%d \n", ranks, rank, size)
 	rst0, _ := redis.Strings(cli.Do("ZRANGE", wwa, ranks[0], ranks[0]))
@@ -215,7 +233,9 @@ func (c ArenaCtrl) RandFightUsers(u, a int) revel.Result {
 	rst2, _ := redis.Strings(cli.Do("ZRANGE", wwa, ranks[2], ranks[2]))
 	repl, _ := redis.Strings(cli.Do("HMGET", "zone_user", rst0[0], rst1[0], rst2[0]))
 	// log.Printf("repl : %v \n", repl)
-	return c.RenderText(strings.Join(repl, "-"))
+	sortVal := SortDetailByLevel(repl)
+	sort.Sort(sortVal)
+	return c.RenderText(strings.Join(sortVal, "-"))
 }
 
 func getRandExcept(start, end, except int) int {
