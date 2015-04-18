@@ -5,14 +5,15 @@ import (
 	"github.com/revel/revel"
 	"gopkg.in/yaml.v2"
 	"os"
+	"log"
 )
 
 type GameServerConfig struct {
-	Ip     string `ip`
-	Port   int    `port`
-	ZoneId int    `zoneId`
-	Domain string `domain`
-	Name   string `name`
+	Ip     string `yaml:"ip"`
+	Port   int    `yaml:"port"`
+	ZoneId int    `yaml:"zoneId"`
+	Domain string `yaml:"domain"`
+	Name   string `yaml:"name"`
 }
 
 // 每日刷新玩家基本数据url
@@ -72,6 +73,12 @@ func InitGameServerConfig() {
 	data := make([]byte, size)
 	file.Read(data)
 	fmt.Printf(" size = %d, yml : %s\n", size, data)
-	yaml.Unmarshal(data, &GameServerList)
-	fmt.Println("gamserverList", GameServerList)
+	err = yaml.Unmarshal(data, &GameServerList)
+	if err != nil {
+		log.Panicf("load game_server.yml err %s\n", err.Error())
+		return
+	}
+	for _, gs := range GameServerList {
+		log.Printf("gs: ip=%s,port=%d,zoneId=%d,domain=%s,name=%s\n", gs.Ip, gs.Port,gs.ZoneId, gs.Domain, gs.Name)
+	}
 }
