@@ -25,6 +25,13 @@ type Exchange struct {
 	Rates       int    `json:"-"`
 }
 
+// 奖励预览
+type ExchangeView struct {
+	Quanlity int `json:"q"`
+	Img      int `json:"img"`
+	Amt      int `json:"amt"`
+}
+
 var (
 	// 基础兑换表
 	BaseExchangeList = []*Exchange{}

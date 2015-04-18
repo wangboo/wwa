@@ -164,6 +164,7 @@ func (c ArenaCtrl) RankInfo(u, a int) revel.Result {
 	}
 	rst := strings.Split(detail, ",")
 	rank, _ := cli.Do("ZRANK", fmt.Sprintf("wwa_%s", rst[9]), simpleKey)
+	// type,rank,积分
 	return c.RenderText("%s,%d,%s", rst[9], rank, rst[1])
 }
 
@@ -249,19 +250,21 @@ func getThreeExcept(ranks []string, except string) []string {
 func (c ArenaCtrl) NewComer(a, u, pow, hero, q, lev int, name string) revel.Result {
 	cli := models.RedisPool.Get()
 	defer cli.Close()
+	gs := models.FindGameServer(a)
 	rank := &models.Rank{
-		UserId: u,
-		Score:  0,
-		Level:  lev,
-		Name:   name,
-		Hero:   hero,
-		Q:      q,
-		Pow:    pow,
-		ZoneId: a,
-		Type:   0,
+		UserId:   u,
+		Score:    0,
+		Level:    lev,
+		Name:     name,
+		Hero:     hero,
+		Q:        q,
+		Pow:      pow,
+		ZoneId:   a,
+		Type:     0,
+		ZoneName: gs.Name,
 	}
 	simpleKey := models.ToSimpleKey(a, u)
 	cli.Do("HSET", "zone_user", simpleKey, rank.ToDetailKey())
-	cli.Do("ZADD", "wwa_0", simpleKey, models.RANK_SCORE_SUB)
+	cli.Do("ZADD", "wwa_0", models.RANK_SCORE_SUB, simpleKey)
 	return c.RenderText("ok")
 }
