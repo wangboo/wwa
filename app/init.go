@@ -6,6 +6,8 @@ import (
 	"github.com/revel/revel"
 	"github.com/wangboo/wwa/app/jobs"
 	"github.com/wangboo/wwa/app/models"
+	"log"
+	"strings"
 )
 
 func init() {
@@ -22,7 +24,8 @@ func init() {
 		//HeaderFilter,                  // Add some security based headers
 		revel.InterceptorFilter, // Run interceptors around the action.
 		revel.CompressFilter,    // Compress the result.
-		revel.ActionInvoker,     // Invoke the action.
+		WhiteIPFilter,
+		revel.ActionInvoker, // Invoke the action.
 	}
 	// register startup functions with OnAppStart
 	revel.OnAppStart(models.InitGameServerConfig)
@@ -37,6 +40,28 @@ func init() {
 		jobs.Schedule("45 22 0 * * ?", &mjob.DayEndRewardJob{})
 		// jobs.Now(&mjob.RankDataJob{})
 	})
+}
+
+var WhiteIPFilter = func(c *revel.Controller, fc []revel.Filter) {
+	enable := revel.Config.BoolDefault("GameServer.whiteIP", false)
+	if !enable {
+		fc[0](c, fc[1:])
+		return
+	}
+	uri := c.Request.RequestURI
+	if strings.HasPrefix(uri, "/wwa/") {
+		remoteIP := c.Request.Header.Get("X-Forwarded-For")
+		log.Printf("remote : %s\n", remoteIP)
+		for _, s := range models.GameServerList {
+			if s.Ip == remoteIP {
+				fc[0](c, fc[1:])
+				return
+			}
+		}
+		c.Result = c.RenderText("Unauthorized")
+	} else {
+		fc[0](c, fc[1:])
+	}
 }
 
 // TODO turn this into revel.HeaderFilter
