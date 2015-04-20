@@ -31,6 +31,7 @@ func (b *BaseModel) Destory() error {
 
 // 调用游戏服务器
 func GetGameServer(url string) ([]byte, error) {
+	log.Printf("url = %s\n", url)
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, err
