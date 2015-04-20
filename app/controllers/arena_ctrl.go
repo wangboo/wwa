@@ -8,7 +8,7 @@ import (
 	"github.com/revel/revel"
 	"github.com/wangboo/wwa/app/jobs"
 	"github.com/wangboo/wwa/app/models"
-	// "log"
+	"log"
 	"math/rand"
 	"regexp"
 	"sort"
@@ -115,7 +115,7 @@ func incrScore(cli redis.Conn, a, u, s int) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	// log.Printf("%s\n", detail)
+	log.Printf("incrScore before detail : %s\n", detail)
 	rst := GetScoreRegex.FindStringSubmatch(detail)
 	score, _ := strconv.Atoi(rst[2])
 	newScore := score + s
@@ -123,16 +123,17 @@ func incrScore(cli redis.Conn, a, u, s int) (string, error) {
 		newScore = 0
 	}
 	newStr := fmt.Sprintf("%s%d%s", rst[1], newScore, rst[3])
-	// log.Println("save newStr : ", newStr)
+	log.Println("incrScore after : ", newStr)
 	simpleKey := models.ToSimpleKey(a, u)
-	// 更新缓存数据
+	//	更新缓存数据
 	cli.Do("HSET", "zone_user", simpleKey, newStr)
 	wwa := fmt.Sprintf("wwa_%s", rst[4])
-	rankScore := score - s
+	rankScore, _ := redis.Int(cli.Do("ZSCORE", wwa, simpleKey))
+	rankScore = rankScore - s
 	if rankScore > models.RANK_SCORE_SUB {
 		rankScore = models.RANK_SCORE_SUB
 	}
-	cli.Do("ZADD", wwa, fmt.Sprintf("%d", rankScore), simpleKey)
+	cli.Do("ZADD", wwa, strconv.Itoa(rankScore), simpleKey)
 	return newStr, nil
 }
 

@@ -25,12 +25,6 @@ type Rank struct {
 
 const RANK_SCORE_SUB = 100000
 
-// func FindRankById(zoneId, id, t int) *Rank {
-// 	rank := &Rank{ZoneId: zoneId, UserId: id, Type: t}
-// 	DB.Find(rank)
-// 	return rank
-// }
-
 // 存到排名redis的值
 func (r *Rank) ToDetailKey() string {
 	return fmt.Sprintf("%d,%d,%d,%s,%d,%d,%d,%d,%s,%d", r.UserId, r.Score, r.Level, r.Name, r.Pow, r.Hero, r.Q, r.ZoneId, r.ZoneName, r.Type)
