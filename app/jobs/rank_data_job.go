@@ -33,13 +33,15 @@ func (r *RankDataJob) Run() {
 }
 
 func SaveDataByServerAndType(cli redis.Conn, s *models.GameServerConfig, t int) {
-	resp, err := http.Get(s.UserRankUrl(t))
+	url := s.UserRankUrl(t)
+	resp, err := http.Get(url)
+	revel.INFO.Printf("url : %s\n", url)
 	if err != nil {
-		revel.ERROR.Printf("获取%s访问失败！！\n", s.UserRankUrl(t))
+		revel.ERROR.Printf("获取%s访问失败！！\n", url)
 		return
 	}
 	data, err := ioutil.ReadAll(resp.Body)
-	revel.INFO.Printf("服务器应答：%s\n", data)
+	revel.INFO.Printf("服务器应答：%s \n", string(data))
 	listOfRank := []models.Rank{}
 	err = json.Unmarshal(data, &listOfRank)
 	if err != nil {
