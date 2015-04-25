@@ -1,13 +1,12 @@
 package mjob
 
 import (
-	// "github.com/revel/revel"
 	"encoding/json"
 	"fmt"
 	"github.com/garyburd/redigo/redis"
+	"github.com/revel/revel"
 	"github.com/wangboo/wwa/app/models"
 	"io/ioutil"
-	"log"
 	"net/http"
 )
 
@@ -36,14 +35,16 @@ func (r *RankDataJob) Run() {
 func SaveDataByServerAndType(cli redis.Conn, s *models.GameServerConfig, t int) {
 	resp, err := http.Get(s.UserRankUrl(t))
 	if err != nil {
-		log.Panicf("获取%s访问失败！！\n", s.UserRankUrl(t))
+		revel.ERROR.Printf("获取%s访问失败！！\n", s.UserRankUrl(t))
 		return
 	}
 	data, err := ioutil.ReadAll(resp.Body)
+	revel.INFO.Printf("服务器应答：%s\n", data)
 	listOfRank := []models.Rank{}
 	err = json.Unmarshal(data, &listOfRank)
 	if err != nil {
-		log.Panicln("SaveDataByServerAndType失败")
+		revel.ERROR.Printf("SaveDataByServerAndType失败\n", data)
+		return
 	}
 	for _, r := range listOfRank {
 		rank := &r
