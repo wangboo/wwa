@@ -208,26 +208,39 @@ func (c ArenaCtrl) RandFightUsers(u, a int) revel.Result {
 	// log.Printf("myself : %v \n", detail)
 	rst := GetScoreRegex.FindStringSubmatch(detail)
 	wwa := fmt.Sprintf("wwa_%s", rst[4])
-	rank, _ := redis.Int(cli.Do("ZRANK", wwa, simpleKey))
 	size, _ := redis.Int(cli.Do("ZCard", wwa))
+	if size < 4 {
+		return c.RenderText("redis error")
+	}
+	rank, _ := redis.Int(cli.Do("ZRANK", wwa, simpleKey))
 	ranks := make([]int, 3)
-	// 最高经验
-	if rank < 10 {
-		ranks[0] = getRandExcept(0, 10, rank)
+	if size < 40 {
+		randNum := rand.Perm(size)
+		for i := 0; i < 3; {
+			if randNum[i] != rank {
+				ranks[i] = randNum[i]
+				i += 1
+			}
+		}
 	} else {
-		ranks[0] = getRandExcept(rank-11, rank-1, rank)
-	}
-	// 中等
-	if ranks[0]+11 > size {
-		ranks[1] = getRandExcept(size-10, size-1, 0)
-	} else {
-		ranks[1] = getRandExcept(ranks[0]+1, ranks[0]+10, rank)
-	}
-	// 低等
-	if ranks[1]+20 > size {
-		ranks[2] = getRandExcept(size-15, size-5, 0)
-	} else {
-		ranks[2] = getRandExcept(ranks[1]+1, ranks[1]+15, rank)
+		// 最高经验
+		if rank < 20 {
+			ranks[0] = getRandExcept(0, 10, rank)
+		} else {
+			ranks[0] = getRandExcept(rank-11, rank-1, rank)
+		}
+		// 中等
+		if ranks[0]+11 > size {
+			ranks[1] = getRandExcept(size-10, size-1, 0)
+		} else {
+			ranks[1] = getRandExcept(ranks[0]+1, ranks[0]+10, rank)
+		}
+		// 低等
+		if ranks[1]+20 > size {
+			ranks[2] = getRandExcept(size-15, size-5, 0)
+		} else {
+			ranks[2] = getRandExcept(ranks[1]+1, ranks[1]+15, rank)
+		}
 	}
 	// fmt.Printf("ranks = %v, rank=%d, size=%d \n", ranks, rank, size)
 	rst0, _ := redis.Strings(cli.Do("ZRANGE", wwa, ranks[0], ranks[0]))
