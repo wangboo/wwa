@@ -36,7 +36,8 @@ get /ex/reload ExchangeCtrl.ReloadConfig
 get /ex/reset ExchangeCtrl.ResetDailyExchange
 # 查询每日兑换内容
 get /ex ExchangeCtrl.DailyExchange
-
+# 用户更换服务器通知
+GET /user/changeServer		User.ChangeServer
 
 get /test App.Test
 

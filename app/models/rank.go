@@ -23,6 +23,10 @@ type Rank struct {
 	ZoneName string
 }
 
+func (r *Rank) String() string {
+	return fmt.Sprintf("UserId=%d,Level=%d,Name=%s,Pow=%d \n", r.UserId, r.Level, r.Name, r.Pow)
+}
+
 const RANK_SCORE_SUB = 100000
 
 // 存到排名redis的值

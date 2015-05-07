@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"github.com/revel/revel"
 	"gopkg.in/yaml.v2"
-	"os"
 	"log"
+	"os"
 )
 
 type GameServerConfig struct {
@@ -29,6 +29,11 @@ func (g *GameServerConfig) GroupDataUrl(t int) string {
 // 获取玩家战斗Group数据
 func (g *GameServerConfig) GroupInfoUrl(t int) string {
 	return fmt.Sprintf("http://%s:%d/%s/admin/wwa/gi?id=%d", g.Ip, g.Port, g.Domain, t)
+}
+
+// 获取玩家更换服务器
+func (g *GameServerConfig) ChangeServerUrl(name string) string {
+	return fmt.Sprintf("http://%s:%d/%s/admin/master/changeServer?name=%s", name)
 }
 
 func (g GameServerConfig) String() string {
@@ -79,6 +84,6 @@ func InitGameServerConfig() {
 		return
 	}
 	for _, gs := range GameServerList {
-		log.Printf("gs: ip=%s,port=%d,zoneId=%d,domain=%s,name=%s\n", gs.Ip, gs.Port,gs.ZoneId, gs.Domain, gs.Name)
+		log.Printf("gs: ip=%s,port=%d,zoneId=%d,domain=%s,name=%s\n", gs.Ip, gs.Port, gs.ZoneId, gs.Domain, gs.Name)
 	}
 }
