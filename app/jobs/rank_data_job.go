@@ -2,7 +2,7 @@ package mjob
 
 import (
 	"encoding/json"
-	"fmt"
+	// "fmt"
 	"github.com/garyburd/redigo/redis"
 	"github.com/revel/revel"
 	"github.com/wangboo/wwa/app/models"
