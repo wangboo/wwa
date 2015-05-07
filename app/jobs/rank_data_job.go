@@ -50,6 +50,7 @@ func SaveDataByServerAndType(cli redis.Conn, s *models.GameServerConfig, t int) 
 	}
 	for _, r := range listOfRank {
 		rank := &r
+		revel.INFO.Println("rank = %v ", rank)
 		rank.Score = 0
 		rank.ZoneId = s.ZoneId
 		rank.ZoneName = s.Name

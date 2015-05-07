@@ -1,8 +1,8 @@
 - zoneId: 1
-  ip: 203.195.181.103
-  port: 8080
+  ip: 10.8.49.235
+  port: 9090
   domain: jiyu
-  name: 开发服
+  name: 王博的服务器
 # - zoneId: 2
 #   ip: 42.62.58.174
 #   port: 8080
