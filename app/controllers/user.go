@@ -16,7 +16,7 @@ func (c *User) ChangeServer(name string, areaId int) revel.Result {
 		if gs.ZoneId == areaId {
 			continue
 		}
-		url := gs.ChangeServerUrl()
+		url := gs.ChangeServerUrl(name)
 		go http.Get(url)
 	}
 	return c.RenderText("ok")
