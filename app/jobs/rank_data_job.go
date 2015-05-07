@@ -17,7 +17,6 @@ type RankDataJob struct {
 func (r *RankDataJob) Run() {
 	cli := models.RedisPool.Get()
 	defer cli.Close()
-	fmt.Println("Run RankData Job")
 	// models.DB.Exec("delete from ranks")
 	// wwa_ 为 Sorted-set，存放着玩家竞技排名信息 score - 玩家详细信息
 	cli.Do("DEL", "wwa_0")
