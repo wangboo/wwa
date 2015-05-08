@@ -1,8 +1,8 @@
 - zoneId: 1
-  ip: 203.195.181.103
+  ip: 203.195.148.216
   port: 8080
   domain: jiyu
-  name: 开发服
+  name: 西楚霸王
 # - zoneId: 2
 #   ip: 42.62.58.174
 #   port: 8080

@@ -10,15 +10,15 @@
 app.name = wwa
 module.jobs = github.com/revel/modules/jobs
 
-# 自定义配置 
+# 自定义配置
 root = /home/platform/go/src/github.com/wangboo/wwa
-gorm.adapter = mysql 
+gorm.adapter = mysql
 gorm.database_uri = root:wang@tcp(127.0.0.1:3306)/wwa?charset=utf8&parseTime=True
 redis.protocol = tcp
 redis.address = :6389
 group_info_cache_time = 60
 group_data_cache_time = 60
-password = w231520 
+password = w231520
 # 竞技场兑换每日生个个数
 exchange.amount = 6
 wwa.dayEndJobFile = /home/chengdu/data/wwa/dayEndJob
@@ -171,6 +171,6 @@ module.testrunner =
 
 
 log.trace.output = off
-log.info.output  = off
-log.warn.output  = %(app.name)s.log
-log.error.output = %(app.name)s.log
+log.info.output  = /data/log/wwa/info.log
+log.warn.output  = /data/log/wwa/warn.log
+log.error.output = /data/log/wwa/error.log
