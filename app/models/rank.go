@@ -18,6 +18,8 @@ type Rank struct {
 	Pow    int    `json:"pow"`       // 战斗力
 	ZoneId int    `sql:"not null"`   // 游戏服务器id
 	Type   int    `sql:"not null"`   // 排行榜类别 分为3中竞技场 0低等级（15-34），1中等级（35-54），2高等级（55-）
+	Img    int    `json:"img"`
+	Frame  int    `json:"frame"`
 	// 玩家竞技场数据
 	Data     string
 	ZoneName string
@@ -31,7 +33,8 @@ const RANK_SCORE_SUB = 100000
 
 // 存到排名redis的值
 func (r *Rank) ToDetailKey() string {
-	return fmt.Sprintf("%d,%d,%d,%s,%d,%d,%d,%d,%s,%d", r.UserId, r.Score, r.Level, r.Name, r.Pow, r.Hero, r.Q, r.ZoneId, r.ZoneName, r.Type)
+	return fmt.Sprintf("%d,%d,%d,%s,%d,%d,%d,%d,%s,%d,%d,%d", r.UserId, r.Score, r.Level, r.Name, r.Pow, r.Hero, r.Q, r.ZoneId, r.ZoneName, r.Type,
+		r.Img, r.Frame)
 }
 
 // 存到redis排名的 SortedSet 的table名
