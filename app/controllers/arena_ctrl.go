@@ -287,7 +287,7 @@ func getThreeExcept(ranks []string, except string) []string {
 }
 
 // 新升级的用户
-func (c ArenaCtrl) NewComer(a, u, pow, hero, q, lev int, name string) revel.Result {
+func (c ArenaCtrl) NewComer(a, u, pow, hero, q, lev, img, frame int, name string) revel.Result {
 	cli := models.RedisPool.Get()
 	defer cli.Close()
 	gs := models.FindGameServer(a)
@@ -310,6 +310,8 @@ func (c ArenaCtrl) NewComer(a, u, pow, hero, q, lev int, name string) revel.Resu
 		Pow:      pow,
 		ZoneId:   a,
 		Type:     0,
+		Img:      img,
+		Frame:    frame,
 		ZoneName: gs.Name,
 	}
 	simpleKey := models.ToSimpleKey(a, u)
