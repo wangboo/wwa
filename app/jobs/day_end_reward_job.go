@@ -9,7 +9,6 @@ import (
 	"github.com/garyburd/redigo/redis"
 	"github.com/revel/revel"
 	"github.com/wangboo/wwa/app/models"
-	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -57,7 +56,7 @@ func (j *DayEndRewardJob) Run() {
 	file, err := os.Create(fmt.Sprintf("%s/%s", path, filename))
 	defer file.Close()
 	if err != nil {
-		log.Fatalf("创建文件出错：%s\n", err.Error())
+		revel.ERROR.Fatalf("创建文件出错：%s\n", err.Error())
 	}
 	dayEndRewardByType(0, file)
 	dayEndRewardByType(1, file)
@@ -71,7 +70,7 @@ func loadConfig() {
 	reader := bufio.NewReader(file)
 	_, err = reader.ReadString('\n')
 	if err != nil {
-		log.Fatalf("加载 %s 出错，没有读取到第一行内容	\n", filePath)
+		revel.ERROR.Fatalf("加载 %s 出错，没有读取到第一行内容	\n", filePath)
 		return
 	}
 	for {
@@ -94,7 +93,7 @@ func loadConfig() {
 			Gold:  g,
 		}
 		BaseRewardList = append(BaseRewardList, reward)
-		log.Printf("base :\n %v \n", BaseRewardList)
+		revel.INFO.Printf("base :\n %v \n", BaseRewardList)
 	}
 }
 
@@ -115,7 +114,7 @@ func dayEndRewardByType(Type int, file *os.File) {
 		data := strings.Split(rankUsers[i], ",")
 		base, err := getRewardByRank(Type, rank)
 		if err != nil {
-			log.Fatal("error : %s \n", err.Error())
+			revel.ERROR.Printf("error : %s \n", err.Error())
 			continue
 		}
 		userId, _ := strconv.Atoi(data[1])
@@ -133,16 +132,16 @@ func dayEndRewardByType(Type int, file *os.File) {
 	for _, gs := range models.GameServerList {
 		users := findUserByGameServer(list, &gs)
 		str := strings.Join(users, "-")
-		// log.Printf("发奖给%s:\n%s\n", gs.Name, str)
+		revel.INFO.Printf("发奖给%s:\n%s\n", gs.Name, str)
 		encode := base64.StdEncoding.EncodeToString([]byte(str))
 		// 下发日终奖励
 		go func() {
-			// log.Printf("go %s\n", gs.DayEndWwaRewardUrl(encode, Type))
+			revel.INFO.Printf("go %s\n", gs.DayEndWwaRewardUrl(encode, Type))
 			ok, err := models.GetGameServer(gs.DayEndWwaRewardUrl(encode, Type))
 			if err != nil {
-				log.Printf("访问游戏服务器出错\n")
+				revel.ERROR.Printf("访问游戏服务器出错\n")
 			}
-			log.Printf("DayEndRewardJob resp %s \n", ok)
+			revel.INFO.Printf("DayEndRewardJob resp %s \n", ok)
 		}()
 		file.WriteString(fmt.Sprintf("### %d组 发奖给%d服-%s \n", Type, gs.ZoneId, gs.Name))
 		file.WriteString(strings.Join(users, "\n"))

@@ -198,10 +198,10 @@ func (c ArenaCtrl) ResetRank(pwd string) revel.Result {
 
 // 随机3名挑战对象
 func (c ArenaCtrl) RandFightUsers(u, a int) revel.Result {
-  revel.INFO.Println("RandFightUsers")
+	revel.INFO.Println("RandFightUsers")
 	cli := models.RedisPool.Get()
 	defer cli.Close()
-  revel.INFO.Println("GET Redis")
+	revel.INFO.Println("GET Redis")
 	simpleKey := models.ToSimpleKey(a, u)
 	detail, err := redis.String(cli.Do("HGET", "zone_user", simpleKey))
 	if err != nil {
@@ -212,20 +212,20 @@ func (c ArenaCtrl) RandFightUsers(u, a int) revel.Result {
 	wwa := fmt.Sprintf("wwa_%s", rst[4])
 	size, _ := redis.Int(cli.Do("ZCard", wwa))
 	if size < 4 {
-    revel.INFO.Println("player not greater than 4")
+		revel.INFO.Println("player not greater than 4")
 		return c.RenderText("redis error")
 	}
 	rank, _ := redis.Int(cli.Do("ZRANK", wwa, simpleKey))
 	ranks := make([]int, 3)
 	if size < 40 {
 		randNum := rand.Perm(size)
-		for i,j:=0,0; i<3; {
-      revel.INFO.Printf("i=%d,randNum[i]=%d,rank=%d\n", i, randNum[i], rank)
+		for i, j := 0, 0; i < 3; {
+			revel.INFO.Printf("i=%d,randNum[i]=%d,rank=%d\n", i, randNum[i], rank)
 			if randNum[j] != rank {
 				ranks[i] = randNum[j]
-        i+=1
+				i += 1
 			}
-      j += 1
+			j += 1
 		}
 	} else {
 		// 最高经验
@@ -291,6 +291,10 @@ func (c ArenaCtrl) NewComer(a, u, pow, hero, q, lev int, name string) revel.Resu
 	cli := models.RedisPool.Get()
 	defer cli.Close()
 	gs := models.FindGameServer(a)
+	if gs == nil {
+		revel.ERROR.Printf("找不到游戏服务器：%arenId=%d, userId=%d, name=%s \n", a, u, name)
+		return c.RenderText("ok")
+	}
 	rank := &models.Rank{
 		UserId:   u,
 		Score:    0,
