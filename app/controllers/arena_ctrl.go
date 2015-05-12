@@ -292,14 +292,19 @@ func (c ArenaCtrl) NewComer(a, u, pow, hero, q, lev int, name string) revel.Resu
 	defer cli.Close()
 	gs := models.FindGameServer(a)
 	if gs == nil {
-		revel.ERROR.Printf("找不到游戏服务器：%arenId=%d, userId=%d, name=%s \n", a, u, name)
+		revel.ERROR.Printf("找不到游戏服务器：arenId=%d, userId=%d, name=%s \n", a, u, name)
 		return c.RenderText("ok")
+	}
+	nameBytes, err := base64.StdEncoding.DecodeString(name)
+	if err != nil {
+		revel.ERROR.Printf("new error arenId=%d, userId=%d, name=%s \n", a, u, name)
+		return c.RenderText("fail")
 	}
 	rank := &models.Rank{
 		UserId:   u,
 		Score:    0,
 		Level:    lev,
-		Name:     name,
+		Name:     string(nameBytes),
 		Hero:     hero,
 		Q:        q,
 		Pow:      pow,

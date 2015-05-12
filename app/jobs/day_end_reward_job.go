@@ -57,6 +57,7 @@ func (j *DayEndRewardJob) Run() {
 	defer file.Close()
 	if err != nil {
 		revel.ERROR.Fatalf("创建文件出错：%s\n", err.Error())
+		return
 	}
 	dayEndRewardByType(0, file)
 	dayEndRewardByType(1, file)
