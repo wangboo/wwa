@@ -49,11 +49,11 @@ func SaveDataByServerAndType(cli redis.Conn, s *models.GameServerConfig, t int) 
 	}
 	for _, r := range listOfRank {
 		rank := &r
-		revel.INFO.Println("rank = %v ", rank)
 		rank.Score = 0
 		rank.ZoneId = s.ZoneId
 		rank.ZoneName = s.Name
 		rank.Type = t
+		revel.INFO.Println("rank = ", rank)
 		cli.Do("ZADD", rank.ToRedisRankName(), models.RANK_SCORE_SUB, rank.ToSimpleKey())
 		cli.Do("HSET", "zone_user", rank.ToSimpleKey(), rank.ToDetailKey())
 	}

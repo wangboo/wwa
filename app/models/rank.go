@@ -26,7 +26,7 @@ type Rank struct {
 }
 
 func (r *Rank) String() string {
-	return fmt.Sprintf("UserId=%d,Level=%d,Name=%s,Pow=%d \n", r.UserId, r.Level, r.Name, r.Pow)
+	return fmt.Sprintf("UserId=%d,Level=%d,Name=%s,Pow=%d,Type= \n", r.UserId, r.Level, r.Name, r.Pow, r.Type)
 }
 
 const RANK_SCORE_SUB = 100000

@@ -8,7 +8,6 @@ import (
 	"github.com/revel/revel"
 	"github.com/wangboo/wwa/app/jobs"
 	"github.com/wangboo/wwa/app/models"
-	"log"
 	"math/rand"
 	"net/url"
 	"regexp"
@@ -18,8 +17,7 @@ import (
 )
 
 var (
-	GetScoreRegex = regexp.MustCompile(`^(\d+,)(\-{0,1}\d+)(.*(\d+))$`)
-	GetNameRegex  = regexp.MustCompile(`^(\d+,){3}(.*?),.*`)
+	GetNameRegex = regexp.MustCompile(`^(\d+,){3}(.*?),.*`)
 )
 
 type ArenaCtrl struct {
@@ -66,6 +64,9 @@ func (c ArenaCtrl) TopFifty(id int) revel.Result {
 	cli := models.RedisPool.Get()
 	defer cli.Close()
 	allSimplyKeys, _ := redis.Strings(cli.Do("ZRANGE", fmt.Sprintf("wwa_%d", id), 0, 49))
+	if len(allSimplyKeys) == 0 {
+		return c.RenderText("")
+	}
 	args := redis.Args{}
 	args = args.Add("zone_user")
 	for _, k := range allSimplyKeys {
@@ -116,19 +117,20 @@ func incrScore(cli redis.Conn, a, u, s int) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	log.Printf("incrScore before detail : %s\n", detail)
-	rst := GetScoreRegex.FindStringSubmatch(detail)
-	score, _ := strconv.Atoi(rst[2])
+	revel.INFO.Printf("incrScore before detail : %s\n", detail)
+	rst := strings.Split(detail, ",")
+	score, _ := strconv.Atoi(rst[1])
 	newScore := score + s
 	if newScore < 0 {
 		newScore = 0
 	}
-	newStr := fmt.Sprintf("%s%d%s", rst[1], newScore, rst[3])
-	log.Println("incrScore after : ", newStr)
+	rst[1] = strconv.Itoa(newScore)
+	newStr := strings.Join(rst, ",")
+	revel.INFO.Println("incrScore after : ", newStr)
 	simpleKey := models.ToSimpleKey(a, u)
 	//	更新缓存数据
 	cli.Do("HSET", "zone_user", simpleKey, newStr)
-	wwa := fmt.Sprintf("wwa_%s", rst[4])
+	wwa := fmt.Sprintf("wwa_%s", rst[7])
 	rankScore, _ := redis.Int(cli.Do("ZSCORE", wwa, simpleKey))
 	rankScore = rankScore - s
 	if rankScore > models.RANK_SCORE_SUB {
@@ -216,8 +218,8 @@ func (c ArenaCtrl) RandFightUsers(u, a int) revel.Result {
 		return c.RenderText("redis error", err.Error())
 	}
 	revel.INFO.Printf("myself : %v \n", detail)
-	rst := GetScoreRegex.FindStringSubmatch(detail)
-	wwa := fmt.Sprintf("wwa_%s", rst[4])
+	rst := strings.Split(detail, ",")
+	wwa := fmt.Sprintf("wwa_%s", rst[7])
 	size, _ := redis.Int(cli.Do("ZCard", wwa))
 	if size < 4 {
 		revel.INFO.Println("player not greater than 4")
@@ -305,7 +307,7 @@ func (c ArenaCtrl) NewComer(a, u, pow, hero, q, lev, img, frame int, name string
 	}
 	nameBytes, err := base64.StdEncoding.DecodeString(name)
 	if err != nil {
-		revel.ERROR.Printf("new error arenId=%d, userId=%d, name=%s \n", a, u, name)
+		revel.ERROR.Printf("NewComer name decode fail. arenId=%d, userId=%d, name=%s \n", a, u, name)
 		return c.RenderText("fail")
 	}
 	rank := &models.Rank{
