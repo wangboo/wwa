@@ -130,7 +130,7 @@ func incrScore(cli redis.Conn, a, u, s int) (string, error) {
 	simpleKey := models.ToSimpleKey(a, u)
 	//	更新缓存数据
 	cli.Do("HSET", "zone_user", simpleKey, newStr)
-	wwa := fmt.Sprintf("wwa_%s", rst[7])
+	wwa := fmt.Sprintf("wwa_%s", rst[9])
 	rankScore, _ := redis.Int(cli.Do("ZSCORE", wwa, simpleKey))
 	rankScore = rankScore - s
 	if rankScore > models.RANK_SCORE_SUB {
@@ -219,7 +219,7 @@ func (c ArenaCtrl) RandFightUsers(u, a int) revel.Result {
 	}
 	revel.INFO.Printf("myself : %v \n", detail)
 	rst := strings.Split(detail, ",")
-	wwa := fmt.Sprintf("wwa_%s", rst[7])
+	wwa := fmt.Sprintf("wwa_%s", rst[9])
 	size, _ := redis.Int(cli.Do("ZCard", wwa))
 	if size < 4 {
 		revel.INFO.Println("player not greater than 4")
