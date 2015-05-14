@@ -132,22 +132,35 @@ func dayEndRewardByType(Type int, file *os.File) {
 	// 发奖
 	for _, gs := range models.GameServerList {
 		users := findUserByGameServer(list, &gs)
-		str := strings.Join(users, "-")
-		revel.INFO.Printf("发奖给%s:\n%s\n", gs.Name, str)
-		encode := base64.StdEncoding.EncodeToString([]byte(str))
 		// 下发日终奖励
-		go func() {
-			revel.INFO.Printf("go %s\n", gs.DayEndWwaRewardUrl(encode, Type))
-			ok, err := models.GetGameServer(gs.DayEndWwaRewardUrl(encode, Type))
-			if err != nil {
-				revel.ERROR.Printf("访问游戏服务器出错\n")
+		batch := []string{}
+		for _, ur := range users {
+			batch = append(batch, ur)
+			if len(batch) >= 10 {
+				SendBatch(Type, batch, &gs)
+				batch = []string{}
 			}
-			revel.INFO.Printf("DayEndRewardJob resp %s \n", ok)
-		}()
+		}
+		if len(batch) > 0 {
+			SendBatch(Type, batch, &gs)
+		}
 		file.WriteString(fmt.Sprintf("### %d组 发奖给%d服-%s \n", Type, gs.ZoneId, gs.Name))
 		file.WriteString(strings.Join(users, "\n"))
 		file.WriteString("\n\n")
 	}
+}
+
+func SendBatch(Type int, batch []string, gs *models.GameServerConfig) {
+	str := strings.Join(batch, "-")
+	revel.INFO.Printf("发奖给%s:\n%s\n", gs.Name, str)
+	encode := base64.StdEncoding.EncodeToString([]byte(str))
+	url := gs.DayEndWwaRewardUrl(encode, Type)
+	revel.INFO.Printf("go %s\n", url)
+	ok, err := models.GetGameServer(url)
+	if err != nil {
+		revel.ERROR.Printf("访问游戏服务器出错\n")
+	}
+	revel.INFO.Printf("DayEndRewardJob resp %s \n", ok)
 }
 
 func getRewardByRank(t, rank int) (*BaseReward, error) {
@@ -164,7 +177,7 @@ func findUserByGameServer(list []*UserReward, gs *models.GameServerConfig) []str
 	all := []string{}
 	for _, u := range list {
 		if u.ZoneId == gs.ZoneId {
-			all = append(all, u.String())
+			all = append(all, fmt.Sprintf("%d,%d,%d,%d,%d", u.UserId, u.ZoneId, u.Rank, u.Db, u.Gold))
 		}
 	}
 	return all
