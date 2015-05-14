@@ -177,7 +177,7 @@ func findUserByGameServer(list []*UserReward, gs *models.GameServerConfig) []str
 	all := []string{}
 	for _, u := range list {
 		if u.ZoneId == gs.ZoneId {
-			all = append(all, fmt.Sprintf("%d,%d,%d,%d,%d", u.UserId, u.ZoneId, u.Db, u.Gold))
+			all = append(all, fmt.Sprintf("%d,%d,%d,%d,%d", u.UserId, u.ZoneId, u.Rank, u.Db, u.Gold))
 		}
 	}
 	return all
