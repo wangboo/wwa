@@ -135,7 +135,7 @@ func dayEndRewardByType(Type int, file *os.File) {
 		// 下发日终奖励
 		batch := []string{}
 		for _, ur := range users {
-			batch = append(users, ur)
+			batch = append(batch, ur)
 			if len(batch) >= 10 {
 				SendBatch(Type, batch, &gs)
 				batch = []string{}
