@@ -41,6 +41,8 @@ get /ex ExchangeCtrl.DailyExchange
 # 用户更换服务器通知
 GET /user/changeServer		User.ChangeServer
 
+get /job/reloadGameServer User.InitGameServerConfig
+
 get /test App.Test
 
 # Catch all
