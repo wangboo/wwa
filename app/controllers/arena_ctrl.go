@@ -324,6 +324,7 @@ func (c ArenaCtrl) NewComer(a, u, pow, hero, q, lev, img, frame int, name string
 		Frame:    frame,
 		ZoneName: gs.Name,
 	}
+	revel.INFO.Printf("newComer name = %s, Frame=%d,Img=%d\n", rank.Name, rank.Frame, rank.Img)
 	simpleKey := models.ToSimpleKey(a, u)
 	cli.Do("HSET", "zone_user", simpleKey, rank.ToDetailKey())
 	cli.Do("ZADD", "wwa_0", models.RANK_SCORE_SUB, simpleKey)

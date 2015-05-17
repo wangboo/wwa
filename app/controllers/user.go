@@ -21,3 +21,8 @@ func (c *User) ChangeServer(name string, areaId int) revel.Result {
 	}
 	return c.RenderText("ok")
 }
+
+func (c *User) InitGameServerConfig() revel.Result {
+	models.InitGameServerConfig()
+	return c.RenderJson(models.GameServerList)
+}
