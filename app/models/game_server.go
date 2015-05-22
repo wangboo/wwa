@@ -31,6 +31,11 @@ func (g *GameServerConfig) GroupInfoUrl(t int) string {
 	return fmt.Sprintf("http://%s:%d/%s/admin/wwa/gi?id=%d", g.Ip, g.Port, g.Domain, t)
 }
 
+// 获取玩家战斗Group数据
+func (g *GameServerConfig) MuInfoUrl(t int) string {
+	return fmt.Sprintf("http://%s:%d/%s/admin/wwa/mu?id=%d", g.Ip, g.Port, g.Domain, t)
+}
+
 // 获取玩家更换服务器
 func (g *GameServerConfig) ChangeServerUrl(name string) string {
 	return fmt.Sprintf("http://%s:%d/%s/admin/master/changeServer?name=%s", name)

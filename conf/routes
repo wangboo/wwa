@@ -20,6 +20,8 @@ GET /wwa/top50/:id  ArenaCtrl.TopFifty
 GET /wwa/fr  ArenaCtrl.FightResult
 # 获取玩家队伍信息
 GET /wwa/gi ArenaCtrl.GroupInfo
+# 获取玩家幕僚信息
+GET /wwa/mu ArenaCtrl.MuInfo
 # 战斗信息
 GET /wwa/gd ArenaCtrl.GroupData
 #获取我的竞技场类型

@@ -160,6 +160,25 @@ func (c ArenaCtrl) GroupInfo(u, a int) revel.Result {
 	return c.RenderText(str)
 }
 
+func (c *ArenaCtrl) MuInfo(u, a int) revel.Result {
+	cli := models.RedisPool.Get()
+	defer cli.Close()
+	gi, err := cli.Do("GET", models.MuInfoKey(u, a))
+	if err != nil {
+		c.RenderText("redis err %v", err)
+	}
+	if gi != nil {
+		return c.RenderText("%s", gi)
+	}
+	str := models.GetMuInfoFromGameServer(a, u)
+	if len(str) == 0 {
+		return c.RenderText("")
+	}
+	sec := revel.Config.IntDefault("group_info_cache_time", 60)
+	cli.Do("SETEX", models.MuInfoKey(u, a), sec, str)
+	return c.RenderText(str)
+}
+
 // 基本信息
 func (c ArenaCtrl) BaseInfo(u, a int) revel.Result {
 	cli := models.RedisPool.Get()
