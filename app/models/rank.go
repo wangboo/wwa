@@ -56,6 +56,11 @@ func GroupInfoKey(zoneId, userId int) string {
 	return fmt.Sprintf("gi_%d,%d", zoneId, userId)
 }
 
+// 幕僚信息键 set gi_1,1 ... 60 存放幕僚信息
+func MuInfoKey(zoneId, userId int) string {
+	return fmt.Sprintf("mi_%d,%d", zoneId, userId)
+}
+
 // 队伍信息键 set gd_1,1 ... 60 存放队伍战斗信息
 func GroupDataKey(zoneId, userId int) string {
 	return fmt.Sprintf("gd_%d,%d", zoneId, userId)
@@ -64,6 +69,22 @@ func GroupDataKey(zoneId, userId int) string {
 // 从游戏服务器获取队伍信息
 func GetGroupInfoFromGameServer(zoneId, userId int) string {
 	url := FindGameServer(zoneId).GroupInfoUrl(userId)
+	resp, err := http.Get(url)
+	if err != nil {
+		log.Printf("GetGroupInfoFromGameServer: 服务器%s无法访问", url)
+		return ""
+	}
+	str, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Printf("GetGroupInfoFromGameServer: %s应答无法读取", url)
+		return ""
+	}
+	return fmt.Sprintf("%s", str)
+}
+
+// 从游戏服务器获取幕僚信息
+func GetMuInfoFromGameServer(zoneId, userId int) string {
+	url := FindGameServer(zoneId).MuInfoUrl(userId)
 	resp, err := http.Get(url)
 	if err != nil {
 		log.Printf("GetGroupInfoFromGameServer: 服务器%s无法访问", url)
