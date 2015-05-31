@@ -218,6 +218,7 @@ func (c ArenaCtrl) ResetRank(pwd string) revel.Result {
 }
 
 func (c ArenaCtrl) DayEndRewardJob(pwd string) revel.Result {
+	revel.INFO.Println("DayEndRewardJob trigger from web")
 	if pwd != revel.Config.StringDefault("password", "w231520") {
 		c.RenderText("fail password error")
 	}
@@ -324,16 +325,11 @@ func (c ArenaCtrl) NewComer(a, u, pow, hero, q, lev, img, frame int, name string
 		revel.ERROR.Printf("找不到游戏服务器：arenId=%d, userId=%d, name=%s \n", a, u, name)
 		return c.RenderText("ok")
 	}
-	nameBytes, err := base64.StdEncoding.DecodeString(name)
-	if err != nil {
-		revel.ERROR.Printf("NewComer name decode fail. arenId=%d, userId=%d, name=%s \n", a, u, name)
-		return c.RenderText("fail")
-	}
 	rank := &models.Rank{
 		UserId:   u,
 		Score:    0,
 		Level:    lev,
-		Name:     string(nameBytes),
+		Name:     name,
 		Hero:     hero,
 		Q:        q,
 		Pow:      pow,
