@@ -46,6 +46,7 @@ func (u *UserReward) String() string {
 
 var (
 	BaseRewardList []*BaseReward
+	LastRewardTime *time.Time
 )
 
 // 日终发奖
@@ -94,8 +95,8 @@ func loadConfig() {
 			Gold:  g,
 		}
 		BaseRewardList = append(BaseRewardList, reward)
-		revel.INFO.Printf("base :\n %v \n", BaseRewardList)
 	}
+	revel.INFO.Printf("base :\n %v \n", BaseRewardList)
 }
 
 func dayEndRewardByType(Type int, file *os.File) {
