@@ -21,7 +21,7 @@ group_data_cache_time = 60
 password = w231520
 # 竞技场兑换每日生个个数
 exchange.amount = 6
-wwa.dayEndJobFile = /home/chengdu/data/wwa/dayEndJob
+wwa.dayEndJobFile = /data/log/wwa/dayEndJobFile
 # wwa 白名单
 GameServer.whiteIP = false
 
@@ -145,9 +145,9 @@ module.testrunner = github.com/revel/modules/testrunner
 
 # Where to log the various Revel logs
 log.trace.output = off
-log.info.output  = stderr
-log.warn.output  = stderr
-log.error.output = stderr
+log.info.output  = /data/log/wwa/info.log
+log.warn.output  = /data/log/wwa/warn.log
+log.error.output = /data/log/wwa/error.log
 
 
 
