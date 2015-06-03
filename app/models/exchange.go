@@ -42,6 +42,7 @@ var (
 )
 
 func ReloadExchangeConfig() error {
+	BaseExchangeList = []*Exchange{}
 	root, _ := revel.Config.String("root")
 	file, err := os.Open(fmt.Sprintf("%s/conf/base_wwa_exchange.txt", root))
 	defer file.Close()
@@ -91,6 +92,7 @@ func ReloadExchangeConfig() error {
 }
 
 func ResetDailyExchange() error {
+	TodayExchangeList = []*Exchange{}
 	if len(BaseExchangeList) == 0 {
 		return errors.New("基本兑换表 base_wwa_exchange 还没有加载或者没有内容")
 	}
