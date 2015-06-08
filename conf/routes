@@ -43,9 +43,10 @@ get /ex ExchangeCtrl.DailyExchange
 # 用户更换服务器通知
 GET /user/changeServer		User.ChangeServer
 
-get /job/reloadGameServer User.InitGameServerConfig
+GET 	/payment 	App.Payment
+POST 	/payment 	App.Payment
 
-get /test App.Test
+get /job/reloadGameServer User.InitGameServerConfig
 
 # Catch all
 *       /:controller/:action                    :controller.:action
