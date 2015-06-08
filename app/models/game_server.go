@@ -5,6 +5,7 @@ import (
 	"github.com/revel/revel"
 	"gopkg.in/yaml.v2"
 	"log"
+	// "net/url"
 	"os"
 )
 
@@ -53,6 +54,10 @@ func (g *GameServerConfig) MailUrl(userId int, mail string) string {
 // 日终奖励
 func (g *GameServerConfig) DayEndWwaRewardUrl(str string, Type int) string {
 	return fmt.Sprintf("http://%s:%d/%s/admin/wwa/dayEndReward?t=%d&base64=%s", g.Ip, g.Port, g.Domain, Type, str)
+}
+
+func (g *GameServerConfig) Payment(begindt, enddt string) string {
+	return fmt.Sprintf("http://%s:%d/%s/admin/charge?begindt=%s&enddt=%s", g.Ip, g.Port, g.Domain, begindt, enddt)
 }
 
 var (
