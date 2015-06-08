@@ -56,8 +56,8 @@ func (g *GameServerConfig) DayEndWwaRewardUrl(str string, Type int) string {
 	return fmt.Sprintf("http://%s:%d/%s/admin/wwa/dayEndReward?t=%d&base64=%s", g.Ip, g.Port, g.Domain, Type, str)
 }
 
-func (g *GameServerConfig) Payment(begindt, enddt string) string {
-	return fmt.Sprintf("http://%s:%d/%s/admin/charge?begindt=%s&enddt=%s", g.Ip, g.Port, g.Domain, begindt, enddt)
+func (g *GameServerConfig) Payment() string {
+	return fmt.Sprintf("http://%s:%d/%s/admin/charge", g.Ip, g.Port, g.Domain)
 }
 
 var (

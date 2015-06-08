@@ -32,7 +32,7 @@ func (b *BaseModel) Destory() error {
 
 // 调用游戏服务器
 func GetGameServer(url string) ([]byte, error) {
-	log.Printf("url = %s\n", url)
+	// log.Printf("url = %s\n", url)
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, err
@@ -42,7 +42,7 @@ func GetGameServer(url string) ([]byte, error) {
 
 // 调用游戏服务器
 func PostFormGameServer(url string, data url.Values) ([]byte, error) {
-	log.Printf("url = %s\n", url)
+	// log.Printf("url = %s\n", url)
 	resp, err := http.PostForm(url, data)
 	if err != nil {
 		return nil, err
