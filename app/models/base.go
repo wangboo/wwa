@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"time"
 )
@@ -33,6 +34,16 @@ func (b *BaseModel) Destory() error {
 func GetGameServer(url string) ([]byte, error) {
 	log.Printf("url = %s\n", url)
 	resp, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	return ioutil.ReadAll(resp.Body)
+}
+
+// 调用游戏服务器
+func PostFormGameServer(url string, data url.Values) ([]byte, error) {
+	log.Printf("url = %s\n", url)
+	resp, err := http.PostForm(url, data)
 	if err != nil {
 		return nil, err
 	}
