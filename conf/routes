@@ -43,8 +43,10 @@ get /ex ExchangeCtrl.DailyExchange
 # 用户更换服务器通知
 GET /user/changeServer		User.ChangeServer
 
-GET 	/payment 	App.Payment
-POST 	/payment 	App.Payment
+GET 	/payment 						App.Payment
+POST 	/payment 						App.Payment
+GET 	/paymentDetail 			App.PaymentDetail
+POST 	/paymentDetail 			App.PaymentDetail
 
 get /job/reloadGameServer User.InitGameServerConfig
 

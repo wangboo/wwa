@@ -4,6 +4,7 @@ import (
 	"github.com/revel/revel"
 	"github.com/wangboo/wwa/app/jobs"
 	"github.com/wangboo/wwa/app/models"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
@@ -41,11 +42,14 @@ func (c App) Payment(begindt string, enddt string) revel.Result {
 	if err != nil {
 		return c.RenderText("enddt format error(yyyy-MM-dd): %s", err.Error())
 	}
-
+	value := url.Values{}
+	value.Add("begindt", begindt)
+	value.Add("enddt", enddt)
 	length := len(models.GameServerList)
 	ch := make(chan int, length)
+	defer close(ch)
 	for _, gs := range models.GameServerList {
-		go getPaymentFromGameServer(ch, gs, begindt, enddt)
+		go getPaymentFromGameServer(ch, gs, value)
 	}
 	sum := 0
 	for i := 0; i < length; i++ {
@@ -57,19 +61,65 @@ func (c App) Payment(begindt string, enddt string) revel.Result {
 	return c.RenderText("%d", sum)
 }
 
-func getPaymentFromGameServer(ch chan int, gs models.GameServerConfig, begindt, enddt string) {
-	url := gs.Payment(begindt, enddt)
-	rstBytes, err := models.GetGameServer(url)
+func (c App) PaymentDetail(begindt string, enddt string) revel.Result {
+	_, err := time.Parse("2006-01-02", begindt)
 	if err != nil {
-		revel.ERROR.Println("服务器 %s 响应错误 %s ", url, err.Error())
+		return c.RenderText("begindt format error(yyyy-MM-dd): %s", err.Error())
+	}
+	_, err = time.Parse("2006-01-02", enddt)
+	if err != nil {
+		return c.RenderText("enddt format error(yyyy-MM-dd): %s", err.Error())
+	}
+	value := url.Values{}
+	value.Add("begindt", begindt)
+	value.Add("enddt", enddt)
+	length := len(models.GameServerList)
+	ch := make(chan [2]int, length)
+	defer close(ch)
+	for _, gs := range models.GameServerList {
+		go getPaymentFromGameServer2(ch, gs, value, gs.ZoneId)
+	}
+	sum := make([]int, length, length)
+	for i := 0; i < length; i++ {
+		select {
+		case payment := <-ch:
+			// revel.INFO.Println("payment = ", payment)
+			sum[payment[0]-1] += payment[1]
+		}
+	}
+	return c.RenderJson(sum)
+}
+
+func getPaymentFromGameServer(ch chan int, gs models.GameServerConfig, data url.Values) {
+	reqUrl := gs.Payment()
+	rstBytes, err := models.PostFormGameServer(reqUrl, data)
+	if err != nil {
+		revel.ERROR.Println("服务器 %s 响应错误 %s ", reqUrl, err.Error())
 		ch <- 0
 		return
 	}
 	payment, err := strconv.Atoi(string(rstBytes))
 	if err != nil {
-		revel.ERROR.Printf("金额转换错误 url = %s, payment = %s \n", url, rstBytes)
+		revel.ERROR.Printf("金额转换错误 url = %s, payment = %s \n", reqUrl, rstBytes)
 		ch <- 0
 		return
 	}
 	ch <- payment
+}
+
+func getPaymentFromGameServer2(ch chan [2]int, gs models.GameServerConfig, data url.Values, zoneId int) {
+	reqUrl := gs.Payment()
+	rstBytes, err := models.PostFormGameServer(reqUrl, data)
+	if err != nil {
+		revel.ERROR.Println("服务器 %s 响应错误 %s ", reqUrl, err.Error())
+		ch <- [2]int{zoneId, 0}
+		return
+	}
+	payment, err := strconv.Atoi(string(rstBytes))
+	if err != nil {
+		revel.ERROR.Printf("金额转换错误 url = %s, payment = %s \n", reqUrl, rstBytes)
+		ch <- [2]int{zoneId, 0}
+		return
+	}
+	ch <- [2]int{zoneId, payment}
 }
