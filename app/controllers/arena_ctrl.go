@@ -103,7 +103,7 @@ func (c ArenaCtrl) FightResult(s, u, a, us, uu, ua int, win bool) revel.Result {
 		}
 		server := models.FindGameServer(ua)
 		rst := GetNameRegex.FindStringSubmatch(myDetail)
-		content := fmt.Sprintf("你在跨服竞技中遭遇%d区-%s的突袭，将军被迫撤退，损失了%d点竞技积分。", a, rst[2], us)
+		content := fmt.Sprintf("你在跨服竞技中遭遇%s的突袭，将军被迫撤退，损失了%d点竞技积分。", rst[2], us)
 		content = base64.StdEncoding.EncodeToString([]byte(content))
 		content = url.QueryEscape(content)
 		go models.GetGameServer(server.MailUrl(uu, content))
