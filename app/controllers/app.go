@@ -1,10 +1,12 @@
 package controllers
 
 import (
+	"fmt"
 	"github.com/revel/revel"
 	"github.com/wangboo/wwa/app/jobs"
 	"github.com/wangboo/wwa/app/models"
 	"net/url"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -75,18 +77,18 @@ func (c App) PaymentDetail(begindt string, enddt string) revel.Result {
 	value.Add("enddt", enddt)
 	length := len(models.GameServerList)
 	ch := make(chan [2]int, length)
-	defer close(ch)
+	// defer close(ch)
 	for _, gs := range models.GameServerList {
 		go getPaymentFromGameServer2(ch, gs, value, gs.ZoneId)
 	}
-	sum := make([]int, length, length)
+	sum := make([]string, length, length)
 	for i := 0; i < length; i++ {
 		select {
 		case payment := <-ch:
-			// revel.INFO.Println("payment = ", payment)
-			sum[payment[0]-1] += payment[1]
+			sum[i] = fmt.Sprintf("%d-%d", payment[0], payment[1])
 		}
 	}
+	sort.Strings(sum)
 	return c.RenderJson(sum)
 }
 
