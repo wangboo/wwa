@@ -15,6 +15,11 @@ type RankDataJob struct {
 }
 
 func (r *RankDataJob) Run() {
+	defer catchException()
+	r.RunImpl()
+}
+
+func (r *RankDataJob) RunImpl() {
 	cli := models.RedisPool.Get()
 	defer cli.Close()
 	// models.DB.Exec("delete from ranks")

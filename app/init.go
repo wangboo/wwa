@@ -4,10 +4,13 @@ import (
 	// "fmt"
 	"github.com/revel/modules/jobs/app/jobs"
 	"github.com/revel/revel"
+	// "github.com/wangboo/wwa/app/controllers"
 	"github.com/wangboo/wwa/app/jobs"
 	"github.com/wangboo/wwa/app/models"
 	"log"
+	"reflect"
 	"strings"
+	// "unsafe"
 )
 
 func init() {
@@ -25,11 +28,13 @@ func init() {
 		revel.InterceptorFilter, // Run interceptors around the action.
 		revel.CompressFilter,    // Compress the result.
 		WhiteIPFilter,
+		MgoSessionFilter,
 		revel.ActionInvoker, // Invoke the action.
 	}
 	// register startup functions with OnAppStart
 	revel.OnAppStart(models.InitGameServerConfig)
-	// revel.OnAppStart(models.InitDatabase)
+	revel.OnAppStart(models.InitBaseInvitation)
+	revel.OnAppStart(models.InitDatabase)
 	revel.OnAppStart(models.InitRedis)
 	revel.OnAppStart(func() {
 		// 日终竞技场排名清空
@@ -49,7 +54,7 @@ var WhiteIPFilter = func(c *revel.Controller, fc []revel.Filter) {
 		return
 	}
 	uri := c.Request.RequestURI
-	if strings.HasPrefix(uri, "/wwa/") {
+	if strings.HasPrefix(uri, "/wwa/") || strings.HasPrefix(uri, "/inv/") {
 		remoteIP := c.Request.Header.Get("X-Forwarded-For")
 		log.Printf("remote : %s\n", remoteIP)
 		for _, s := range models.GameServerList {
@@ -64,14 +69,21 @@ var WhiteIPFilter = func(c *revel.Controller, fc []revel.Filter) {
 	}
 }
 
-// TODO turn this into revel.HeaderFilter
-// should probably also have a filter for CSRF
-// not sure if it can go in the same filter or not
-// var HeaderFilter = func(c *revel.Controller, fc []revel.Filter) {
-// 	// Add some common security headers
-// 	c.Response.Out.Header().Add("X-Frame-Options", "SAMEORIGIN")
-// 	c.Response.Out.Header().Add("X-XSS-Protection", "1; mode=block")
-// 	c.Response.Out.Header().Add("X-Content-Type-Options", "nosniff")
-
-// 	fc[0](c, fc[1:]) // Execute the next filter stage.
-// }
+// mgo Session 注入
+var MgoSessionFilter = func(c *revel.Controller, fc []revel.Filter) {
+	appCtrl := c.AppController
+	typeOfC := reflect.TypeOf(appCtrl).Elem()
+	_, ok := typeOfC.FieldByName("MSession")
+	if !ok {
+		fc[0](c, fc[1:])
+		return
+	}
+	valueOfC := reflect.ValueOf(appCtrl).Elem()
+	// 注入session
+	newSession := models.Session()
+	defer newSession.Close()
+	valueOfSession := reflect.ValueOf(newSession)
+	valoeOfElem := valueOfC.FieldByName("MSession")
+	valoeOfElem.Set(valueOfSession)
+	fc[0](c, fc[1:])
+}

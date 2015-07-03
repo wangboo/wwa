@@ -58,7 +58,7 @@ func (c App) Payment(begindt string, enddt string) revel.Result {
 			sum += payment
 		}
 	}
-	return c.RenderText("%d", sum)
+	return c.RenderJson(sum)
 }
 
 func (c App) PaymentDetail(begindt string, enddt string) revel.Result {

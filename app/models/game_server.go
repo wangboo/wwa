@@ -39,7 +39,15 @@ func (g *GameServerConfig) MuInfoUrl(t int) string {
 
 // 获取玩家更换服务器
 func (g *GameServerConfig) ChangeServerUrl(name string) string {
-	return fmt.Sprintf("http://%s:%d/%s/admin/master/changeServer?name=%s", name)
+	return fmt.Sprintf("http://%s:%d/%s/admin/master/changeServer?name=%s", g.Ip, g.Port, g.Domain, name)
+}
+
+func (g *GameServerConfig) UserLevelAndVipUrl(username string) string {
+	return fmt.Sprintf("http://%s:%d/%s/admin/inv/levelAndVip?username=%s", g.Ip, g.Port, g.Domain, username)
+}
+
+func (g *GameServerConfig) UserInvInfoUrl(username string) string {
+	return fmt.Sprintf("http://%s:%d/%s/admin/inv/info?username=%s", g.Ip, g.Port, g.Domain, username)
 }
 
 func (g GameServerConfig) String() string {

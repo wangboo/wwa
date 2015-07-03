@@ -1,0 +1,164 @@
+[
+    {
+        "type": "MAIN",
+        "sub_type": "LEVEL",
+        "id": 1,
+        "size": 1,
+        "condition": 30,
+        "reward": "gc-300",
+        "desc": "一个被推广人达到30级"
+    },
+    {
+        "type": "MAIN",
+        "sub_type": "LEVEL",
+        "id": 2,
+        "size": 2,
+        "condition": 30,
+        "reward": "gc-300",
+        "desc": "两个被推广人达到30级"
+    },
+    {
+        "type": "MAIN",
+        "sub_type": "LEVEL",
+        "id": 3,
+        "size": 3,
+        "condition": 30,
+        "reward": "gc-300",
+        "desc": "三个被推广人达到30级"
+    },
+    {
+        "type": "MAIN",
+        "sub_type": "LEVEL",
+        "id": 4,
+        "size": 1,
+        "condition": 40,
+        "reward": "gc-500",
+        "desc": "一个被推广人达到40级"
+    },
+    {
+        "type": "MAIN",
+        "sub_type": "LEVEL",
+        "id": 5,
+        "size": 2,
+        "condition": 40,
+        "reward": "gc-500",
+        "desc": "两个被推广人达到40级"
+    },
+    {
+        "type": "MAIN",
+        "sub_type": "LEVEL",
+        "id": 6,
+        "size": 3,
+        "condition": 40,
+        "reward": "gc-500",
+        "desc": "三个被推广人达到40级"
+    },
+    {
+        "type": "MAIN",
+        "sub_type": "VIP",
+        "id": 7,
+        "size": 1,
+        "condition": 1,
+        "reward": "g-30,vp-20",
+        "desc": "一个被推广人VIP达到1级"
+    },
+    {
+        "type": "MAIN",
+        "sub_type": "VIP",
+        "id": 8,
+        "size": 2,
+        "condition": 1,
+        "reward": "g-30,vp-20",
+        "desc": "两个被推广人VIP达到1级"
+    },
+    {
+        "type": "MAIN",
+        "sub_type": "VIP",
+        "id": 9,
+        "size": 3,
+        "condition": 1,
+        "reward": "g-30,vp-20",
+        "desc": "三个被推广人VIP达到1级"
+    },
+    {
+        "type": "MAIN",
+        "sub_type": "VIP",
+        "id": 10,
+        "size": 1,
+        "condition": 3,
+        "reward": "g-500,vp-200",
+        "desc": "一个被推广人VIP达到3级"
+    },
+    {
+        "type": "MAIN",
+        "sub_type": "VIP",
+        "id": 11,
+        "size": 2,
+        "condition": 3,
+        "reward": "g-500,vp-200",
+        "desc": "两个被推广人VIP达到3级"
+    },
+    {
+        "type": "MAIN",
+        "sub_type": "VIP",
+        "id": 11,
+        "size": 3,
+        "condition": 3,
+        "reward": "g-500,vp-200",
+        "desc": "三个被推广人VIP达到3级"
+    },
+    {
+        "type": "MAIN",
+        "sub_type": "VIP",
+        "id": 12,
+        "size": 1,
+        "condition": 5,
+        "reward": "g-2000,vp-500",
+        "desc": "一个被推广人VIP达到5级"
+    },
+    {
+        "type": "MAIN",
+        "sub_type": "VIP",
+        "id": 13,
+        "size": 2,
+        "condition": 5,
+        "reward": "g-2000,vp-500",
+        "desc": "一个被推广人VIP达到5级"
+    },
+    {
+        "type": "MAIN",
+        "sub_type": "VIP",
+        "id": 14,
+        "size": 3,
+        "condition": 5,
+        "reward": "g-2000,vp-500",
+        "desc": "一个被推广人VIP达到5级"
+    },
+    {
+        "type": "DAILY",
+        "id": 15,
+        "sub_type": "INV",
+        "size": 1,
+        "condition": 0,
+        "reward": "ps-10,mex-5000",
+        "desc": "今日推广一人"
+    },
+    {
+        "type": "DAILY",
+        "id": 16,
+        "sub_type": "INV",
+        "size": 2,
+        "condition": 0,
+        "reward": "ps-10,mex-5000",
+        "desc": "今日推广两人"
+    },
+    {
+        "type": "DAILY",
+        "id": 17,
+        "sub_type": "INV",
+        "size": 3,
+        "condition": 0,
+        "reward": "ps-10,mex-5000",
+        "desc": "今日推广三人"
+    }
+]
