@@ -8,7 +8,6 @@ import (
 )
 
 type Rank struct {
-	BaseModel
 	UserId int    `json:"id"`        // 玩家id
 	Score  int    `sql:"default:0"`  // 竞技场积分
 	Level  int    `json:"level"`     // 等级

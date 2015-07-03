@@ -9,6 +9,11 @@ type ExchangeJob struct {
 }
 
 func (e *ExchangeJob) Run() {
+	defer catchException()
+	e.RunImpl()
+}
+
+func (e *ExchangeJob) RunImpl() {
 	if len(models.BaseExchangeList) == 0 {
 		err := models.ReloadExchangeConfig()
 		if err != nil {

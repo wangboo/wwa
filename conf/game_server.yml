@@ -1,9 +1,35 @@
 - zoneId: 1
-  ip: 203.195.148.216
-  port: 8080
+  ip: 10.8.49.235
+  port: 9090
   domain: jiyu
   name: 西楚霸王
-# - zoneId: 2
-#   ip: 42.62.58.174
+# - zoneId: 1
+#   ip: 203.195.148.216
 #   port: 8080
 #   domain: jiyu
+#   name: 西楚霸王
+- zoneId: 2
+  ip: 203.195.235.101
+  port: 9090
+  domain: jiyu
+  name: 兵仙韩信
+- zoneId: 3
+  ip: 203.195.235.101
+  port: 8080
+  domain: jiyu
+  name: 留侯张良
+- zoneId: 4
+  ip: 203.195.235.101
+  port: 10010
+  name: 始皇嬴政
+  domain: jiyu
+- zoneId: 5
+  ip: 203.195.235.101
+  port: 10011
+  domain: jiyu
+  name: 虞美人
+- zoneId: 6
+  ip: 203.195.235.101
+  port: 10012
+  domain: jiyu
+  name: 掌中飞燕

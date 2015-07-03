@@ -48,6 +48,19 @@ POST 	/payment 						App.Payment
 GET 	/paymentDetail 			App.PaymentDetail
 POST 	/paymentDetail 			App.PaymentDetail
 
+# 查询玩家信息
+GET  	/inv/show 					UserInvCtrl.Show
+# 玩家升级
+GET 	/inv/levelUp				UserInvCtrl.LevelUp
+# 使用code
+GET 	/inv/useCode 				UserInvCtrl.UseCode
+# 领取奖励
+GET 	/inv/getReward			UserInvCtrl.GetReward
+# 关注列表
+GET 	/inv/focusList			UserInvCtrl.FocusList
+# 查看邀请码
+GET 	/inv/code 					UserInvCtrl.Code
+
 get /job/reloadGameServer User.InitGameServerConfig
 
 # Catch all
