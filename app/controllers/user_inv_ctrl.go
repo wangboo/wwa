@@ -212,6 +212,7 @@ func (c *UserInvCtrl) FocusList(username string, zoneId int) revel.Result {
 		if err != nil {
 			continue
 		}
+		defer resp.Body.Close()
 		data, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			continue

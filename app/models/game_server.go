@@ -91,6 +91,7 @@ func InitGameServerConfig() {
 	if err != nil {
 		panic(fmt.Sprintf("没有找到配置文件%s", filepath))
 	}
+	defer file.Close()
 	fi, _ := file.Stat()
 	size := fi.Size()
 	data := make([]byte, size)

@@ -44,6 +44,7 @@ func SaveDataByServerAndType(cli redis.Conn, s *models.GameServerConfig, t int) 
 		revel.ERROR.Printf("获取%s访问失败！！\n", url)
 		return
 	}
+	defer resp.Body.Close()
 	data, err := ioutil.ReadAll(resp.Body)
 	revel.INFO.Printf("服务器应答：%s \n", string(data))
 	listOfRank := []models.Rank{}

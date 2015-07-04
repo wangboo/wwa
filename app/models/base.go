@@ -24,6 +24,7 @@ func GetGameServer(url string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer resp.Body.Close()
 	return ioutil.ReadAll(resp.Body)
 }
 
@@ -34,6 +35,7 @@ func PostFormGameServer(url string, data url.Values) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer resp.Body.Close()
 	return ioutil.ReadAll(resp.Body)
 }
 

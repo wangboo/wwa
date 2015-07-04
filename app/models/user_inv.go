@@ -135,6 +135,7 @@ func FindUserTaskInfos(users []UserInv) []*UserTaskInfo {
 			revel.ERROR.Println("FindUserTaskInfos http.Get err :", err.Error())
 			continue
 		}
+		defer resp.Body.Close()
 		data, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			revel.ERROR.Println("FindUserTaskInfos ioutil.ReadAll err :", err.Error())
