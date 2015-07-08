@@ -46,13 +46,15 @@ type UserTaskInfo struct {
 
 // 前台显示信息
 type UserInvShowInfo struct {
-	Zone  string
-	Name  string `json:"name"`
-	Level int    `json:"level"`
-	Vip   int    `json:"vip"`
-	Pow   int    `json:"pow"`
-	Frame int    `json:"frame"`
-	Photo int    `json:"photo"`
+	Zone   string
+	Name   string `json:"name"`
+	Level  int    `json:"level"`
+	Vip    int    `json:"vip"`
+	Pow    int    `json:"pow"`
+	Frame  int    `json:"frame"`
+	Photo  int    `json:"photo"`
+	Same   bool   `json:"same"` // 是否同服
+	UserId int    `json:"userId"`
 }
 
 func NewUserInv(c *mgo.Collection, username string, zoneId int) (user *UserInv, err error) {

@@ -43,6 +43,9 @@ func (c *UserInvCtrl) Show(username string, zoneId int) revel.Result {
 		if !ok {
 			revel.ERROR.Printf("not find daily task! user=%s, zoneId=%d, taskId=%d \n", username, zoneId, baseDaily.Id)
 		}
+		if ud.Got {
+			continue
+		}
 		daily := bson.M{}
 		daily["reward"] = baseDaily.Reward
 		daily["complete"] = ok && ud.Complete
@@ -152,7 +155,8 @@ func (c *UserInvCtrl) UseCode(username string, zoneId int, code string) revel.Re
 			col.UpdateId(focus.Id, bson.M{"$set": bson.M{"daily_task": focus.DailyTask}})
 		}
 	}
-	return c.RenderJson(focus)
+	reward := revel.Config.StringDefault("nv.code", "i-113102-1")
+	return c.RenderJson(bson.M{"reward": reward})
 }
 
 // 获取奖励
@@ -207,6 +211,7 @@ func (c *UserInvCtrl) FocusList(username string, zoneId int) revel.Result {
 		info := &models.UserInvShowInfo{}
 		info.Name = "未知"
 		info.Zone = fmt.Sprintf("%d-%s", gs.ZoneId, gs.Name)
+		info.Same = gs.ZoneId == user.ZoneId
 		all = append(all, info)
 		resp, err := http.Get(url)
 		if err != nil {
@@ -219,7 +224,31 @@ func (c *UserInvCtrl) FocusList(username string, zoneId int) revel.Result {
 		}
 		json.Unmarshal(data, info)
 	}
-	return c.RenderJson(bson.M{"list": all})
+	rst := bson.M{"list": all}
+	if user.Focus.Valid() {
+		mine := &models.UserInv{}
+		err = col.Find(bson.M{"_id": user.Focus}).One(mine)
+		if err == nil {
+			gs := models.FindGameServer(mine.ZoneId)
+			url := gs.UserInvInfoUrl(mine.Username)
+			info := &models.UserInvShowInfo{}
+			info.Name = "未知"
+			info.Zone = fmt.Sprintf("%d-%s", gs.ZoneId, gs.Name)
+			info.Same = gs.ZoneId == user.ZoneId
+			rst["mine"] = info
+			resp, err := http.Get(url)
+			if err == nil {
+				defer resp.Body.Close()
+				data, err := ioutil.ReadAll(resp.Body)
+				if err == nil {
+					json.Unmarshal(data, info)
+				}
+			}
+		} else {
+			revel.ERROR.Println("err = ", err)
+		}
+	}
+	return c.RenderJson(rst)
 }
 
 func findUserDailyTaskByTaskId(taskId int, dailyTasks []*models.UserTaskStatus) (task *models.UserTaskStatus, ok bool) {
