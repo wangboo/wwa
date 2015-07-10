@@ -44,6 +44,7 @@ func init() {
 		// 跨服竞技场奖励
 		jobs.Schedule("45 22 0 * * ?", &mjob.DayEndRewardJob{})
 		// jobs.Now(&mjob.RankDataJob{})
+		jobs.Schedule("0 0 0 * * ?", &mjob.UserInvDailyJobReset{})
 	})
 }
 
