@@ -29,6 +29,56 @@ func (c *UserInvCtrl) Code(username string, zoneId int) revel.Result {
 	return c.RenderJson(bson.M{"code": user.Code})
 }
 
+// 可领取的任务数量
+func (c *UserInvCtrl) ShowSize(username string, zoneId int) revel.Result {
+	col := models.Col(c.MSession, models.COL_USER_INV)
+	user, err := models.FindUserInv(col, username, zoneId)
+	if err != nil {
+		return c.RenderJson(FailWithError(err))
+	}
+	count := 0
+	// 每日任务
+	for _, baseDaily := range models.BaseDailyInvList {
+		ud, ok := findUserDailyTaskByTaskId(baseDaily.Id, user.DailyTask)
+		if !ok {
+			revel.ERROR.Printf("not find daily task! user=%s, zoneId=%d, taskId=%d \n", username, zoneId, baseDaily.Id)
+		}
+		if ud.Got {
+			continue
+		}
+		if ok && ud.Complete {
+			count += 1
+		}
+	}
+	// 主线任务
+	focusUsers := []models.UserInv{}
+	col.Find(bson.M{"focus": user.Id}).All(&focusUsers)
+	userTaskInfos := models.FindUserTaskInfos(focusUsers)
+	needUpdate := false
+	for index, baseMain := range models.BaseMainInvList {
+		um, ok := findUserDailyTaskByTaskId(baseMain.Id, user.MainTask)
+		if !ok || um.Got {
+			continue
+		}
+		// 检查任务是否完成
+		if um.Complete {
+			count += 1
+		} else {
+			if userInvMainTaskIsComplete(&baseMain, userTaskInfos) {
+				// 需要将更新状态
+				user.MainTask[index].Complete = true
+				needUpdate = true
+				count += 1
+			}
+		}
+	}
+	if needUpdate {
+		revel.INFO.Println("update user.MainTask = ", user.MainTask)
+		col.UpdateId(user.Id, bson.M{"$set": bson.M{"main_task": user.MainTask}})
+	}
+	return c.RenderJson(bson.M{"size": count})
+}
+
 func (c *UserInvCtrl) Show(username string, zoneId int) revel.Result {
 	col := models.Col(c.MSession, models.COL_USER_INV)
 	user, err := models.FindUserInv(col, username, zoneId)
@@ -43,12 +93,10 @@ func (c *UserInvCtrl) Show(username string, zoneId int) revel.Result {
 		if !ok {
 			revel.ERROR.Printf("not find daily task! user=%s, zoneId=%d, taskId=%d \n", username, zoneId, baseDaily.Id)
 		}
-		if ud.Got {
-			continue
-		}
 		daily := bson.M{}
 		daily["reward"] = baseDaily.Reward
 		daily["complete"] = ok && ud.Complete
+		daily["got"] = ud.Got
 		daily["desc"] = baseDaily.Desc
 		daily["taskId"] = baseDaily.Id
 		tasks = append(tasks, daily)
@@ -60,10 +108,11 @@ func (c *UserInvCtrl) Show(username string, zoneId int) revel.Result {
 	needUpdate := false
 	for index, baseMain := range models.BaseMainInvList {
 		um, ok := findUserDailyTaskByTaskId(baseMain.Id, user.MainTask)
-		if ok && um.Got {
+		if !ok {
 			continue
 		}
 		main := bson.M{}
+		main["got"] = um.Got
 		main["reward"] = baseMain.Reward
 		// 检查任务是否完成
 		if um.Complete {

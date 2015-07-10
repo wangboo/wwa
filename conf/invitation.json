@@ -123,7 +123,7 @@
         "size": 2,
         "condition": 5,
         "reward": "g-2000,vp-500",
-        "desc": "一个被推广人VIP达到5级"
+        "desc": "两个被推广人VIP达到5级"
     },
     {
         "type": "MAIN",
@@ -132,7 +132,7 @@
         "size": 3,
         "condition": 5,
         "reward": "g-2000,vp-500",
-        "desc": "一个被推广人VIP达到5级"
+        "desc": "三个被推广人VIP达到5级"
     },
     {
         "type": "DAILY",
