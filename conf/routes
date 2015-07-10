@@ -60,6 +60,8 @@ GET 	/inv/getReward			UserInvCtrl.GetReward
 GET 	/inv/focusList			UserInvCtrl.FocusList
 # 查看邀请码
 GET 	/inv/code 					UserInvCtrl.Code
+# 待领取的任务个数
+GET 	/inv/showSize 			UserInvCtrl.ShowSize
 
 get /job/reloadGameServer User.InitGameServerConfig
 
