@@ -261,6 +261,7 @@ func (c *UserInvCtrl) FocusList(username string, zoneId int) revel.Result {
 		info.Name = "未知"
 		info.Zone = fmt.Sprintf("%d-%s", gs.ZoneId, gs.Name)
 		info.Same = gs.ZoneId == user.ZoneId
+		info.ZoneId = gs.ZoneId
 		all = append(all, info)
 		resp, err := http.Get(url)
 		if err != nil {
@@ -284,6 +285,7 @@ func (c *UserInvCtrl) FocusList(username string, zoneId int) revel.Result {
 			info.Name = "未知"
 			info.Zone = fmt.Sprintf("%d-%s", gs.ZoneId, gs.Name)
 			info.Same = gs.ZoneId == user.ZoneId
+			info.ZoneId = gs.ZoneId
 			rst["mine"] = info
 			resp, err := http.Get(url)
 			if err == nil {

@@ -55,6 +55,7 @@ type UserInvShowInfo struct {
 	Photo  int    `json:"photo"`
 	Same   bool   `json:"same"` // 是否同服
 	UserId int    `json:"userId"`
+	ZoneId int    `json:"zoneId"`
 }
 
 func NewUserInv(c *mgo.Collection, username string, zoneId int) (user *UserInv, err error) {
