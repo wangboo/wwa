@@ -5,6 +5,7 @@ import (
 	"github.com/revel/revel"
 	"gopkg.in/yaml.v2"
 	"log"
+	// "net/url"
 	"os"
 )
 
@@ -38,7 +39,15 @@ func (g *GameServerConfig) MuInfoUrl(t int) string {
 
 // 获取玩家更换服务器
 func (g *GameServerConfig) ChangeServerUrl(name string) string {
-	return fmt.Sprintf("http://%s:%d/%s/admin/master/changeServer?name=%s", name)
+	return fmt.Sprintf("http://%s:%d/%s/admin/master/changeServer?name=%s", g.Ip, g.Port, g.Domain, name)
+}
+
+func (g *GameServerConfig) UserLevelAndVipUrl(username string) string {
+	return fmt.Sprintf("http://%s:%d/%s/admin/inv/levelAndVip?username=%s", g.Ip, g.Port, g.Domain, username)
+}
+
+func (g *GameServerConfig) UserInvInfoUrl(username string) string {
+	return fmt.Sprintf("http://%s:%d/%s/admin/inv/info?username=%s", g.Ip, g.Port, g.Domain, username)
 }
 
 func (g GameServerConfig) String() string {
@@ -53,6 +62,10 @@ func (g *GameServerConfig) MailUrl(userId int, mail string) string {
 // 日终奖励
 func (g *GameServerConfig) DayEndWwaRewardUrl(str string, Type int) string {
 	return fmt.Sprintf("http://%s:%d/%s/admin/wwa/dayEndReward?t=%d&base64=%s", g.Ip, g.Port, g.Domain, Type, str)
+}
+
+func (g *GameServerConfig) Payment() string {
+	return fmt.Sprintf("http://%s:%d/%s/admin/charge", g.Ip, g.Port, g.Domain)
 }
 
 var (
@@ -78,6 +91,7 @@ func InitGameServerConfig() {
 	if err != nil {
 		panic(fmt.Sprintf("没有找到配置文件%s", filepath))
 	}
+	defer file.Close()
 	fi, _ := file.Stat()
 	size := fi.Size()
 	data := make([]byte, size)

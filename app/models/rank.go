@@ -8,7 +8,6 @@ import (
 )
 
 type Rank struct {
-	BaseModel
 	UserId int    `json:"id"`        // 玩家id
 	Score  int    `sql:"default:0"`  // 竞技场积分
 	Level  int    `json:"level"`     // 等级
@@ -74,6 +73,7 @@ func GetGroupInfoFromGameServer(zoneId, userId int) string {
 		log.Printf("GetGroupInfoFromGameServer: 服务器%s无法访问", url)
 		return ""
 	}
+	defer resp.Body.Close()
 	str, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Printf("GetGroupInfoFromGameServer: %s应答无法读取", url)
@@ -90,6 +90,7 @@ func GetMuInfoFromGameServer(zoneId, userId int) string {
 		log.Printf("GetGroupInfoFromGameServer: 服务器%s无法访问", url)
 		return ""
 	}
+	defer resp.Body.Close()
 	str, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Printf("GetGroupInfoFromGameServer: %s应答无法读取", url)
@@ -106,6 +107,7 @@ func GetGroupDataFromGameServer(zoneId, userId int) string {
 		log.Printf("GetGroupInfoFromGameServer: 服务器%s无法访问", url)
 		return ""
 	}
+	defer resp.Body.Close()
 	str, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Printf("GetGroupInfoFromGameServer: %s应答无法读取", url)

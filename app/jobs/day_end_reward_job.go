@@ -49,8 +49,20 @@ var (
 	LastRewardTime *time.Time
 )
 
+func catchException() {
+	if err := recover(); err != nil {
+		revel.ERROR.Println("err : ", err)
+	}
+}
+
 // 日终发奖
 func (j *DayEndRewardJob) Run() {
+	defer catchException()
+	j.RunImpl()
+}
+
+// 日终发奖
+func (j *DayEndRewardJob) RunImpl() {
 	loadConfig()
 	path, _ := revel.Config.String("wwa.dayEndJobFile")
 	filename := time.Now().Format("2006-01-02.txt")

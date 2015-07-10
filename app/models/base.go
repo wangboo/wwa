@@ -2,59 +2,53 @@ package models
 
 import (
 	"github.com/garyburd/redigo/redis"
-	_ "github.com/go-sql-driver/mysql"
-	"github.com/jinzhu/gorm"
 	"github.com/revel/revel"
 	"io/ioutil"
-	"log"
+	"labix.org/v2/mgo"
 	"net/http"
-	"os"
+	"net/url"
 	"time"
 )
 
-var DB *gorm.DB
-var db gorm.DB
-
-var RedisPool *redis.Pool
-
-type BaseModel struct {
-	Id int `gorm:"primary_key",sql:"AUTO_INCREMENT"`
-}
-
-func (b *BaseModel) NewRecord() bool {
-	return b.Id <= 0
-}
-
-func (b *BaseModel) Destory() error {
-	return DB.Delete(b).Error
-}
+var (
+	RedisPool    *redis.Pool
+	DB_NAME      = "wwa"
+	COL_USER_INV = "user_invs"
+	session      *mgo.Session
+)
 
 // 调用游戏服务器
 func GetGameServer(url string) ([]byte, error) {
-	log.Printf("url = %s\n", url)
+	// log.Printf("url = %s\n", url)
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, err
 	}
+	defer resp.Body.Close()
+	return ioutil.ReadAll(resp.Body)
+}
+
+// 调用游戏服务器
+func PostFormGameServer(url string, data url.Values) ([]byte, error) {
+	// log.Printf("url = %s\n", url)
+	resp, err := http.PostForm(url, data)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
 	return ioutil.ReadAll(resp.Body)
 }
 
 func InitDatabase() {
-	adapter := revel.Config.StringDefault("gorm.adapter", "mysql")
-	databaseURI := revel.Config.StringDefault("gorm.database_uri", "")
+	mongodbUrl, ok := revel.Config.String("mongodb")
+	if !ok {
+		panic("app.conf中找不到mongodb")
+	}
 	var err error
-	db, err = gorm.Open(adapter, databaseURI)
+	session, err = mgo.Dial(mongodbUrl)
 	if err != nil {
 		panic(err)
 	}
-	DB = &db
-	db.LogMode(false)
-	logger = Logger{log.New(os.Stdout, "  ", 0)}
-	db.SetLogger(logger)
-	if err := db.AutoMigrate(&Rank{}).Error; err != nil {
-		panic(err)
-	}
-	db.LogMode(true)
 }
 
 // 初始化redis
@@ -77,4 +71,13 @@ func InitRedis() {
 			return err
 		},
 	}
+}
+
+// 获取mgo.Session
+func Session() *mgo.Session {
+	return session.Clone()
+}
+
+func Col(session *mgo.Session, colName string) *mgo.Collection {
+	return session.DB(DB_NAME).C(colName)
 }
