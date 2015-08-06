@@ -120,6 +120,7 @@ func incrScore(cli redis.Conn, a, u, s int) (record models.WWA, err error) {
 	if newScore < 0 {
 		newScore = 0
 	}
+	revel.INFO.Println("newScore = ", newScore)
 	record.SetScore(newScore)
 	// detail, err := redis.String(cli.Do("HGET", "zone_user", models.ToSimpleKey(a, u)))
 	// if err != nil {
@@ -134,14 +135,17 @@ func incrScore(cli redis.Conn, a, u, s int) (record models.WWA, err error) {
 	// simpleKey := models.ToSimpleKey(a, u)
 	//	更新缓存数据
 	// cli.Do("HSET", "zone_user", simpleKey, newStr)
+	// revel.INFO.Println("record.Score = ", record.Score())
 	record.UpdateToRedis()
 	simpleKey := record.SimpleKey()
-	wwa := fmt.Sprintf("wwa_%s", record.Type())
-	rankScore, _ := redis.Int(cli.Do("ZSCORE", wwa, simpleKey))
-	rankScore = rankScore - s
-	if rankScore > models.RANK_SCORE_SUB {
-		rankScore = models.RANK_SCORE_SUB
-	}
+	wwa := fmt.Sprintf("wwa_%d", record.Type())
+	// rankScore, _ := redis.Int(cli.Do("ZSCORE", wwa, simpleKey))
+	// revel.INFO.Printf("wwa = %s, simpleKey = %s, rankScore = %d \n", wwa, simpleKey, rankScore)
+	// rankScore = rankScore - s
+	// if rankScore > models.RANK_SCORE_SUB {
+	// 	rankScore = models.RANK_SCORE_SUB
+	// }
+	rankScore := models.RANK_SCORE_SUB - newScore
 	cli.Do("ZADD", wwa, strconv.Itoa(rankScore), simpleKey)
 	// 巅峰之夜积分变化
 	// revel.INFO.Println("巅峰之夜积分变化")
