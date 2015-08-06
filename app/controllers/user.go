@@ -11,13 +11,13 @@ type User struct {
 }
 
 // 转发到其他游戏服务器
-func (c *User) ChangeServer(name string, areaId int) revel.Result {
+func (c *User) ChangeServer(token string, areaId int) revel.Result {
 	for _, gs := range models.GameServerList {
 		if gs.ZoneId == areaId {
 			continue
 		}
 		go func() {
-			url := gs.ChangeServerUrl(name)
+			url := gs.ChangeServerUrl(token)
 			resp, err := http.Get(url)
 			if err != nil {
 				revel.ERROR.Println("get error", err)

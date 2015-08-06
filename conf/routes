@@ -43,6 +43,18 @@ get /ex ExchangeCtrl.DailyExchange
 # 用户更换服务器通知
 GET /user/changeServer		User.ChangeServer
 
+# --------------巅峰之夜------------------
+# 主界面
+GET 	/www/main 					WWAWeekCtrl.MainPage
+# 挑战结果
+GET 	/www/fr 						WWAWeekCtrl.FightResult
+
+# 下注奖池总和
+GET 	/www/betSum 				BetCtrl.Sum
+# 下注
+GET 	/www/bet 						BetCtrl.Bet
+
+# --------------消费查询------------------
 GET 	/payment 						App.Payment
 POST 	/payment 						App.Payment
 GET 	/paymentDetail 			App.PaymentDetail

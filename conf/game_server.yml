@@ -3,7 +3,3 @@
   port: 8080
   domain: jiyu
   name: 开发服
-# - zoneId: 2
-#   ip: 42.62.58.174
-#   port: 8080
-#   domain: jiyu
