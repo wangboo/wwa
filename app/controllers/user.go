@@ -21,6 +21,7 @@ func (c *User) ChangeServer(name string, areaId int) revel.Result {
 			resp, err := http.Get(url)
 			if err != nil {
 				revel.ERROR.Println("get error", err)
+				return
 			}
 			resp.Body.Close()
 		}()
