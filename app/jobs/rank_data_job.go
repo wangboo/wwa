@@ -29,20 +29,19 @@ func (r *RankDataJob) RunImpl() {
 	// cli.Do("DEL", "wwa_1")
 	// cli.Do("DEL", "wwa_2")
 	// cli.Do("DEL", "wwa_3")
+	models.WwaTypeForeach(func(typeOfWwa int) {
+		cli.Do("DEL", fmt.Sprintf("wwa_%d", t))
+	})
 	// zone_user 为hash表，存放着k-v 内容为 (服务器编号,玩家编号)-(玩家详细信息)
 	cli.Do("DEL", "zone_user")
 	for _, s := range models.GameServerList {
 		models.WwaTypeForeach(func(typeOfWwa int) {
 			SaveDataByServerAndType(cli, &s, typeOfWwa)
 		})
-		// SaveDataByServerAndType(cli, &s, 0)
-		// SaveDataByServerAndType(cli, &s, 1)
-		// SaveDataByServerAndType(cli, &s, 2)
 	}
 }
 
 func SaveDataByServerAndType(cli redis.Conn, s *models.GameServerConfig, t int) {
-	cli.Do("DEL", fmt.Sprintf("wwa_%d", t))
 	url := s.UserRankUrl(t)
 	resp, err := http.Get(url)
 	revel.INFO.Printf("url : %s\n", url)
