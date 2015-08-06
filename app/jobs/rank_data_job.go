@@ -3,6 +3,7 @@ package mjob
 import (
 	"encoding/json"
 	// "fmt"
+	"fmt"
 	"github.com/garyburd/redigo/redis"
 	"github.com/revel/revel"
 	"github.com/wangboo/wwa/app/models"
@@ -24,9 +25,10 @@ func (r *RankDataJob) RunImpl() {
 	defer cli.Close()
 	// models.DB.Exec("delete from ranks")
 	// wwa_ 为 Sorted-set，存放着玩家竞技排名信息 score - 玩家详细信息
-	cli.Do("DEL", "wwa_0")
-	cli.Do("DEL", "wwa_1")
-	cli.Do("DEL", "wwa_2")
+	// cli.Do("DEL", "wwa_0")
+	// cli.Do("DEL", "wwa_1")
+	// cli.Do("DEL", "wwa_2")
+	// cli.Do("DEL", "wwa_3")
 	// zone_user 为hash表，存放着k-v 内容为 (服务器编号,玩家编号)-(玩家详细信息)
 	cli.Do("DEL", "zone_user")
 	for _, s := range models.GameServerList {
@@ -40,6 +42,7 @@ func (r *RankDataJob) RunImpl() {
 }
 
 func SaveDataByServerAndType(cli redis.Conn, s *models.GameServerConfig, t int) {
+	cli.Do("DEL", fmt.Sprintf("wwa_%d", t))
 	url := s.UserRankUrl(t)
 	resp, err := http.Get(url)
 	revel.INFO.Printf("url : %s\n", url)
