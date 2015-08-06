@@ -101,7 +101,7 @@
     {
         "type": "MAIN",
         "sub_type": "VIP",
-        "id": 11,
+        "id": 18,
         "size": 3,
         "condition": 3,
         "reward": "g-500,vp-200",

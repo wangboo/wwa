@@ -5,7 +5,7 @@ import (
 	"github.com/revel/revel"
 	"gopkg.in/yaml.v2"
 	"log"
-	// "net/url"
+	"net/url"
 	"os"
 )
 
@@ -39,7 +39,7 @@ func (g *GameServerConfig) MuInfoUrl(t int) string {
 
 // 获取玩家更换服务器
 func (g *GameServerConfig) ChangeServerUrl(name string) string {
-	return fmt.Sprintf("http://%s:%d/%s/admin/master/changeServer?name=%s", g.Ip, g.Port, g.Domain, name)
+	return fmt.Sprintf("http://%s:%d/%s/admin/master/changeServer?token=%s", g.Ip, g.Port, g.Domain, name)
 }
 
 func (g *GameServerConfig) UserLevelAndVipUrl(username string) string {
@@ -62,6 +62,14 @@ func (g *GameServerConfig) MailUrl(userId int, mail string) string {
 // 日终奖励
 func (g *GameServerConfig) DayEndWwaRewardUrl(str string, Type int) string {
 	return fmt.Sprintf("http://%s:%d/%s/admin/wwa/dayEndReward?t=%d&base64=%s", g.Ip, g.Port, g.Domain, Type, str)
+}
+
+// 通用奖励邮件
+func (g *GameServerConfig) CommonRewardMail(recv int, msg, reward string) string {
+	// crm = CommonRewardMail
+	msg = url.QueryEscape(msg)
+	reward = url.QueryEscape(reward)
+	return fmt.Sprintf("http://%s:%d/%s/admin/wwa/crm?msg=%s&reward=%s&recvId=%d", g.Ip, g.Port, g.Domain, msg, reward, recv)
 }
 
 func (g *GameServerConfig) Payment() string {

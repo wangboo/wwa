@@ -30,9 +30,12 @@ func (r *RankDataJob) RunImpl() {
 	// zone_user 为hash表，存放着k-v 内容为 (服务器编号,玩家编号)-(玩家详细信息)
 	cli.Do("DEL", "zone_user")
 	for _, s := range models.GameServerList {
-		SaveDataByServerAndType(cli, &s, 0)
-		SaveDataByServerAndType(cli, &s, 1)
-		SaveDataByServerAndType(cli, &s, 2)
+		models.WwaTypeForeach(func(typeOfWwa int) {
+			SaveDataByServerAndType(cli, &s, typeOfWwa)
+		})
+		// SaveDataByServerAndType(cli, &s, 0)
+		// SaveDataByServerAndType(cli, &s, 1)
+		// SaveDataByServerAndType(cli, &s, 2)
 	}
 }
 

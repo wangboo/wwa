@@ -90,8 +90,7 @@ func (c ArenaCtrl) FightResult(s, u, a, us, uu, ua int, win bool) revel.Result {
 	}
 	cli := models.RedisPool.Get()
 	defer cli.Close()
-	var myDetail string
-	myDetail, err := incrScore(cli, a, u, s)
+	record, err := incrScore(cli, a, u, s)
 	if err != nil {
 		return c.RenderText("redis err %s", err.Error())
 	}
@@ -102,8 +101,8 @@ func (c ArenaCtrl) FightResult(s, u, a, us, uu, ua int, win bool) revel.Result {
 			return c.RenderText("redis err %s", err.Error())
 		}
 		server := models.FindGameServer(ua)
-		rst := GetNameRegex.FindStringSubmatch(myDetail)
-		content := fmt.Sprintf("你在跨服竞技中遭遇%s的突袭，将军被迫撤退，损失了%d点竞技积分。", rst[2], us)
+		// rst := GetNameRegex.FindStringSubmatch(myDetail)
+		content := fmt.Sprintf("你在跨服竞技中遭遇%s的突袭，将军被迫撤退，损失了%d点竞技积分。", record.Name(), us)
 		content = base64.StdEncoding.EncodeToString([]byte(content))
 		content = url.QueryEscape(content)
 		go models.GetGameServer(server.MailUrl(uu, content))
@@ -112,32 +111,42 @@ func (c ArenaCtrl) FightResult(s, u, a, us, uu, ua int, win bool) revel.Result {
 }
 
 // 玩家增加/扣除积分
-func incrScore(cli redis.Conn, a, u, s int) (string, error) {
-	detail, err := redis.String(cli.Do("HGET", "zone_user", models.ToSimpleKey(a, u)))
+func incrScore(cli redis.Conn, a, u, s int) (record models.WWA, err error) {
+	record, err = models.FindWWAInRedis(a, u)
 	if err != nil {
-		return "", err
+		return
 	}
-	revel.INFO.Printf("incrScore before detail : %s\n", detail)
-	rst := strings.Split(detail, ",")
-	score, _ := strconv.Atoi(rst[1])
-	newScore := score + s
+	newScore := record.Score() + s
 	if newScore < 0 {
 		newScore = 0
 	}
-	rst[1] = strconv.Itoa(newScore)
-	newStr := strings.Join(rst, ",")
-	revel.INFO.Println("incrScore after : ", newStr)
-	simpleKey := models.ToSimpleKey(a, u)
+	record.SetScore(newScore)
+	// detail, err := redis.String(cli.Do("HGET", "zone_user", models.ToSimpleKey(a, u)))
+	// if err != nil {
+	// 	return "", err
+	// }
+	// revel.INFO.Printf("incrScore before detail : %s\n", detail)
+	// rst := strings.Split(detail, ",")
+	// score, _ := strconv.Atoi(rst[1])
+	// rst[1] = strconv.Itoa(newScore)
+	// newStr := strings.Join(rst, ",")
+	// revel.INFO.Println("incrScore after : ", newStr)
+	// simpleKey := models.ToSimpleKey(a, u)
 	//	更新缓存数据
-	cli.Do("HSET", "zone_user", simpleKey, newStr)
-	wwa := fmt.Sprintf("wwa_%s", rst[9])
+	// cli.Do("HSET", "zone_user", simpleKey, newStr)
+	record.UpdateToRedis()
+	simpleKey := record.SimpleKey()
+	wwa := fmt.Sprintf("wwa_%s", record.Type())
 	rankScore, _ := redis.Int(cli.Do("ZSCORE", wwa, simpleKey))
 	rankScore = rankScore - s
 	if rankScore > models.RANK_SCORE_SUB {
 		rankScore = models.RANK_SCORE_SUB
 	}
 	cli.Do("ZADD", wwa, strconv.Itoa(rankScore), simpleKey)
-	return newStr, nil
+	// 巅峰之夜积分变化
+	// revel.INFO.Println("巅峰之夜积分变化")
+	models.UserWWAWeekScoreChange(a, u, s, record.Type())
+	return
 }
 
 // 队伍信息

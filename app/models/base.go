@@ -81,3 +81,25 @@ func Session() *mgo.Session {
 func Col(session *mgo.Session, colName string) *mgo.Collection {
 	return session.DB(DB_NAME).C(colName)
 }
+
+func WwaTypeForeach(fn func(int)) {
+	fn(0)
+	fn(1)
+	fn(2)
+	fn(3)
+}
+
+func WwaTypeToName(typeOfWwa int) string {
+	switch typeOfWwa {
+	case 0:
+		return "小试身手"
+	case 1:
+		return "非同小可"
+	case 2:
+		return "炉火纯青"
+	case 3:
+		return "谁与争锋"
+	default:
+		return "未知"
+	}
+}
