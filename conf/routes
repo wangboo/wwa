@@ -34,6 +34,8 @@ GET /wwa/new ArenaCtrl.NewComer
 get /job/resetRank ArenaCtrl.ResetRank
 # 日终奖励
 get /job/dayEndReward ArenaCtrl.DayEndRewardJob
+# 发放指定类型的日终奖励
+get /job/dayEndRewardByType ArenaCtrl.DayEndRewardJob
 # 重新加载兑换配置文件
 get /ex/reload ExchangeCtrl.ReloadConfig
 # 重置每日兑换内容

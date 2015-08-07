@@ -239,6 +239,12 @@ func (c ArenaCtrl) DayEndRewardJob(pwd string) revel.Result {
 	return c.RenderText("success")
 }
 
+func (c ArenaCtrl) SendDayEndRewardByType(t int) revel.Result {
+	job := &mjob.DayEndRewardJob{}
+	job.SendRewardByType(t)
+	return c.RenderText("ok")
+}
+
 // 随机3名挑战对象
 func (c ArenaCtrl) RandFightUsers(u, a int) revel.Result {
 	revel.INFO.Println("RandFightUsers")
