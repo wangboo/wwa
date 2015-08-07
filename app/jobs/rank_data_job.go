@@ -30,7 +30,7 @@ func (r *RankDataJob) RunImpl() {
 	// cli.Do("DEL", "wwa_2")
 	// cli.Do("DEL", "wwa_3")
 	models.WwaTypeForeach(func(typeOfWwa int) {
-		cli.Do("DEL", fmt.Sprintf("wwa_%d", t))
+		cli.Do("DEL", fmt.Sprintf("wwa_%d", typeOfWwa))
 	})
 	// zone_user 为hash表，存放着k-v 内容为 (服务器编号,玩家编号)-(玩家详细信息)
 	cli.Do("DEL", "zone_user")
