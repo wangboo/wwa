@@ -248,7 +248,7 @@ func (w *WWAWeekCtrl) FightResult(zoneId, userId, rst int) revel.Result {
 	lenOfFightedList := len(week.FightedList)
 	if rst == 0 {
 		// 连胜次数
-		lsTimes := 0
+		lsTimes := 1
 		for i := lenOfFightedList - 1; i >= 0; i-- {
 			if week.FightedList[i].FightRst > 0 {
 				break
