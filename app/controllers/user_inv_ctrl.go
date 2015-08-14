@@ -141,6 +141,7 @@ func (c *UserInvCtrl) Show(username string, zoneId int) revel.Result {
 
 // // 玩家升级 从from等级到to等级
 func (c *UserInvCtrl) LevelUp(username string, zoneId int, from, to int) revel.Result {
+	// models.UserWWAWeekLevelUp()
 	col := models.Col(c.MSession, models.COL_USER_INV)
 	user, err := models.FindUserInv(col, username, zoneId)
 	if err != nil {
@@ -336,7 +337,7 @@ func userInvMainTaskIsComplete(bm *models.BaseInv, userTaskInfos []*models.UserT
 func findUserTaskInfoLevelGtSize(userTaskInfos []*models.UserTaskInfo, level int) int {
 	size := 0
 	for _, i := range userTaskInfos {
-		revel.INFO.Printf("user level = %d, toLevel = %d \n", i.Level, level)
+		// revel.INFO.Printf("user level = %d, toLevel = %d \n", i.Level, level)
 		if i.Level >= level {
 			size += 1
 		}

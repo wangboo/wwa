@@ -63,6 +63,11 @@ func (w WWA) Level() (val int) {
 	return
 }
 
+// 设置等级
+func (w WWA) SetLevel(lev int) {
+	w[2] = strconv.Itoa(lev)
+}
+
 // 跨服竞技名字
 func (w WWA) Name() string {
 	return w[3]
@@ -101,6 +106,10 @@ func (w WWA) ZoneName() string {
 func (w WWA) Type() (val int) {
 	val, _ = strconv.Atoi(w[9])
 	return
+}
+
+func (w WWA) SetType(typeOfWwa int) {
+	w[9] = strconv.Itoa(typeOfWwa)
 }
 
 // 区竞技场头像

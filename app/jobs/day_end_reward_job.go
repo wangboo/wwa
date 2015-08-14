@@ -72,9 +72,25 @@ func (j *DayEndRewardJob) RunImpl() {
 		revel.ERROR.Fatalf("创建文件出错：%s\n", err.Error())
 		return
 	}
-	dayEndRewardByType(0, file)
-	dayEndRewardByType(1, file)
-	dayEndRewardByType(2, file)
+	models.WwaTypeForeach(func(typeOfWwa int) {
+		dayEndRewardByType(typeOfWwa, file)
+	})
+	// dayEndRewardByType(0, file)
+	// dayEndRewardByType(1, file)
+	// dayEndRewardByType(2, file)
+}
+
+func (j *DayEndRewardJob) SendRewardByType(typeOfWwa int) {
+	loadConfig()
+	path, _ := revel.Config.String("wwa.dayEndJobFile")
+	filename := time.Now().Format("2006-01-02.txt.spec")
+	file, err := os.Create(fmt.Sprintf("%s/%s", path, filename))
+	defer file.Close()
+	if err != nil {
+		revel.ERROR.Fatalf("创建文件出错：%s\n", err.Error())
+		return
+	}
+	dayEndRewardByType(typeOfWwa, file)
 }
 
 func loadConfig() {

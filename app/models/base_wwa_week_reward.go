@@ -73,8 +73,9 @@ func LoadBaseWWAWeekReward() {
 			item.End = intVal
 		}
 
-		item.Reward = ss[3]
-
+		item.Reward = strings.Replace(ss[3], `"`, "", -1)
+		item.Reward = strings.TrimSpace(item.Reward)
+		revel.INFO.Printf("type: %d, Begin: %d, End: %d, reward: %s \n", item.Type, item.Begin, item.End, item.Reward)
 		BaseWWAWeekRewardList = append(BaseWWAWeekRewardList, item)
 	}
 }
