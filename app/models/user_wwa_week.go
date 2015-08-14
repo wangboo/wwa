@@ -312,7 +312,7 @@ func GetSysWWAWeekState() int {
 	weekday := now.Weekday()
 	hour := now.Hour()
 	// test
-	weekday, hour = 2, 19
+	weekday, hour = 0, 23
 	// 结果
 	// switch weekday {
 	// case 0:
