@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/url"
 	"os"
+	"time"
 )
 
 type GameServerConfig struct {
@@ -76,6 +77,14 @@ func (g *GameServerConfig) CommonRewardMail(recv int, msg, reward string) string
 	return url
 }
 
+// 电视通知消息
+func (g *GameServerConfig) NoticeUrl(msg string) string {
+	msgBase64 := base64.StdEncoding.EncodeToString([]byte(msg))
+	msgBase64 = url.QueryEscape(msgBase64)
+	url := fmt.Sprintf("http://%s:%d/%s/admin/www/notice?msg=%s", g.Ip, g.Port, g.Domain, msgBase64)
+	return url
+}
+
 // 最牛逼英雄信息{q: , heroId: , name}
 // name 玩家名字
 func (g *GameServerConfig) TopHeroInfo(userId int) string {
@@ -84,6 +93,27 @@ func (g *GameServerConfig) TopHeroInfo(userId int) string {
 
 func (g *GameServerConfig) Payment() string {
 	return fmt.Sprintf("http://%s:%d/%s/admin/charge", g.Ip, g.Port, g.Domain)
+}
+
+// 广播
+func BrocastNoticeToAllGameServer(msg string) {
+	go func() {
+		for _, gs := range GameServerList {
+			url := gs.NoticeUrl(msg)
+			fmt.Println("BrocastNotice : ", url)
+			GetGameServer(url)
+		}
+	}()
+}
+
+// 广播并且重复N次
+func BrocastNoticeToAllGameServerWithTimeInterval(msg string, times, secInterval int) {
+	go func(msg string, times, secInterval int) {
+		for i := 0; i < times; i++ {
+			BrocastNoticeToAllGameServer(msg)
+			time.Sleep(time.Duration(secInterval) * time.Second)
+		}
+	}(msg, times, secInterval)
 }
 
 var (

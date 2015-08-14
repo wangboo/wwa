@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"github.com/revel/revel"
 	"github.com/wangboo/wwa/app/jobs"
 	"github.com/wangboo/wwa/app/models"
@@ -244,6 +245,24 @@ func (w *WWAWeekCtrl) FightResult(zoneId, userId, rst int) revel.Result {
 	case 2:
 		score = 1
 	}
+	lenOfFightedList := len(week.FightedList)
+	if rst == 0 {
+		// 连胜次数
+		lsTimes := 0
+		for i := lenOfFightedList - 1; i >= 0; i-- {
+			if week.FightedList[i].FightRst > 0 {
+				break
+			}
+			lsTimes++
+		}
+		if lsTimes >= 3 {
+			// 广播连胜消息
+			wwa, err := models.FindWWAInRedis(zoneId, userId)
+			if err == nil {
+				models.BrocastNoticeToAllGameServer(fmt.Sprintf("玩家%s在巅峰之夜对决中大杀四方，无人可挡，已经%d连胜啦！", wwa.Name(), lsTimes))
+			}
+		}
+	}
 	fightResult := models.CreateUserWeekWWAFightResult(week.FightingId, rst, score)
 	week.FightedList = append(week.FightedList, *fightResult)
 	// 切换到下一个挑战者
@@ -323,5 +342,15 @@ func (w *WWAWeekCtrl) ChangeType(zoneId, userId, typeOfWwa, lev int) revel.Resul
 	wwa.SetLevel(lev)
 	wwa.SetType(typeOfWwa)
 	wwa.UpdateToRedis()
+	return w.RenderJson(Succ())
+}
+
+// 全游戏广播
+func (w *WWAWeekCtrl) NoticeOnTV(msg string, repeat bool, times, sec int) revel.Result {
+	if !repeat {
+		models.BrocastNoticeToAllGameServer(msg)
+	} else {
+		models.BrocastNoticeToAllGameServerWithTimeInterval(msg, times, sec)
+	}
 	return w.RenderJson(Succ())
 }
