@@ -192,7 +192,7 @@ func UserWWAWeekPlayoff(typeOfWwa int) (list []UserWWAWeek) {
 
 // 切换到季后赛模式，删除20名以后的人员(指定类型)
 func UserWWAWeekSwitch2PlayoffByType(typeOfWwa int) {
-	list := UserWWAWeekPlayoff(typeOfWwa)
+	list := UserWWAWeekTop20ByScore(typeOfWwa)
 	sizeOfList := len(list)
 	sys := FindSysWWAWeek()
 	if sizeOfList < WWA_WEEK_PLAYOFF_ON_MIN_SIZE {
