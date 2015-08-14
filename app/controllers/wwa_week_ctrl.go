@@ -109,7 +109,7 @@ func (w *WWAWeekCtrl) FightInView(week *models.UserWWAWeek, zoneId, userId, type
 		}
 	}
 	rst["score"], rst["win"], rst["deuce"], rst["lose"] = week.PlayoffScore, win, deuce, lose
-	wwa, err := models.FindWWAInRedis(zoneId, userId)
+	wwa, err := models.FindWWAInRedis(week.ZoneId, week.UserId)
 	if err == nil {
 		rst["pow"] = week.Pow
 		rst["name"] = wwa.Name()
