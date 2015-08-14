@@ -153,6 +153,15 @@ func UserWWAWeekTop20(typeOfWwa int) (list []UserWWAWeek) {
 	return
 }
 
+func UserWWAWeekTop20ByScore(typeOfWwa int) (list []UserWWAWeek) {
+	s := Session()
+	defer s.Close()
+	c := s.DB(DB_NAME).C(COL_USER_WWA_WEEK)
+	list = []UserWWAWeek{}
+	c.Find(bson.M{"type": typeOfWwa}).Sort("-score", "-pow").Limit(WWA_WEEK_RANK_SIZE_LIMIT).All(&list)
+	return
+}
+
 // 找到第一名
 func FindUserWWAWeekFirstRank(typeOfWwa int) (week *UserWWAWeek, err error) {
 	s := Session()

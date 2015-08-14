@@ -122,7 +122,14 @@ func (w *WWAWeekCtrl) ShowTop20(selfWeek *models.UserWWAWeek, zoneId, userId, ty
 	if typeOfWwa == -1 {
 		typeOfWwa = selfWWA.Type()
 	}
-	top20 := models.UserWWAWeekTop20(typeOfWwa)
+	var top20 []models.UserWWAWeek
+	if typeOfView == models.TYPE_WWW_VIEW_FIGHT_IN ||
+		typeOfView == models.TYPE_WWW_VIEW_FIGHT_OUT ||
+		typeOfView == models.TYPE_WWW_VIEW_OVER {
+		top20 = models.UserWWAWeekTop20(typeOfWwa)
+	} else {
+		top20 = models.UserWWAWeekTop20ByScore(typeOfWwa)
+	}
 	rst := Succ()
 	rst["score"] = selfWeek.Score
 	rst["typeOfWwa"] = typeOfWwa
