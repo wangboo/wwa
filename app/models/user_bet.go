@@ -218,11 +218,14 @@ func SendUserBetResultMail() {
 // 参与选手发奖
 func SendUserWWAWeekRewardMail(typeOfWwa int) {
 	list := UserWWAWeekTop20(typeOfWwa)
-	firstRank := list[0]
-	wwa, err := FindWWAInRedis(firstRank.ZoneId, firstRank.UserId)
-	if err == nil {
-		msg := fmt.Sprintf("恭喜玩家%s在巅峰之夜对决中傲视群雄，登上至尊王座！", wwa.Name())
-		BrocastNoticeToAllGameServerWithTimeInterval(msg, 3, 60)
+	if len(list) > 0 {
+		firstRank := list[0]
+		wwa, err := FindWWAInRedis(firstRank.ZoneId, firstRank.UserId)
+		if err == nil {
+			msg := fmt.Sprintf("恭喜玩家%s在巅峰之夜%s段位的对决中傲视群雄，登上至尊王座！", wwa.Name(),
+				WwaTypeToName(typeOfWwa))
+			BrocastNoticeToAllGameServerWithTimeInterval(msg, 3, 60)
+		}
 	}
 	revel.INFO.Println("list = ", len(list))
 	for index, week := range list {
