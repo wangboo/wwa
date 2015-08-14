@@ -158,7 +158,7 @@ func UserWWAWeekTop20ByScore(typeOfWwa int) (list []UserWWAWeek) {
 	defer s.Close()
 	c := s.DB(DB_NAME).C(COL_USER_WWA_WEEK)
 	list = []UserWWAWeek{}
-	c.Find(bson.M{"type": typeOfWwa, "score": bson.M{"$gt", 0}}).Sort("-score", "-pow").Limit(WWA_WEEK_RANK_SIZE_LIMIT).All(&list)
+	c.Find(bson.M{"type": typeOfWwa, "score": bson.M{"$gt": 0}}).Sort("-score", "-pow").Limit(WWA_WEEK_RANK_SIZE_LIMIT).All(&list)
 	return
 }
 
