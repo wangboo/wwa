@@ -109,14 +109,17 @@ func (w *WWAWeekCtrl) FightInView(week *models.UserWWAWeek, zoneId, userId, type
 		}
 	}
 	rst["score"], rst["win"], rst["deuce"], rst["lose"] = week.PlayoffScore, win, deuce, lose
-	wwa, err := models.FindWWAInRedis(week.ZoneId, week.UserId)
+	fightWeek, err := models.FindWWAWeekById(week.FightingId)
 	if err == nil {
-		rst["pow"] = week.Pow
-		rst["name"] = wwa.Name()
-		rst["lev"] = wwa.Level()
-		rst["zoneName"] = wwa.ZoneName()
-		rst["frame"] = wwa.Frame()
-		rst["img"] = wwa.Img()
+		wwa, err := models.FindWWAInRedis(fightWeek.ZoneId, fightWeek.UserId)
+		if err == nil {
+			rst["pow"] = week.Pow
+			rst["name"] = wwa.Name()
+			rst["lev"] = wwa.Level()
+			rst["zoneName"] = wwa.ZoneName()
+			rst["frame"] = wwa.Frame()
+			rst["img"] = wwa.Img()
+		}
 	}
 	return rst
 }
