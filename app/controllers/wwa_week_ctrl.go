@@ -87,6 +87,7 @@ func (w *WWAWeekCtrl) FightInView(week *models.UserWWAWeek, zoneId, userId, type
 	// score, pow, typeOfWwa
 	rst["open"] = true
 	rst["typeOfView"] = models.TYPE_WWW_VIEW_FIGHT_IN
+	rst["typeOfMine"] = week.Type
 	rst["rank"] = models.RankInWeekWWA(week.PlayoffScore, week.Pow, week.Type)
 	rst["score"] = week.PlayoffScore
 	fightedSize := len(week.FightedList)
