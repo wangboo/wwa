@@ -186,11 +186,13 @@ func FindUserBetSumByBetUserId(weekId bson.ObjectId) int {
 	c := s.DB(DB_NAME).C(COL_USER_BET)
 	rst := bson.M{}
 	c.Pipe([]bson.M{
+		{"$match": bson.M{"bet_user_id": weekId}},
 		{"$group": bson.M{
-			"_id":  bson.M{"id": "$user_bet_id"},
+			"_id":  bson.M{"id": "$bet_user_id"},
 			"gold": bson.M{"$sum": "$gold"},
 		}},
 	}).One(&rst)
+	revel.INFO.Println("user_bet_id ")
 	if val, ok := rst["gold"]; ok {
 		return val.(int)
 	} else {
@@ -247,7 +249,7 @@ func DeleteUserBetByType(typeOfWwa int) {
 	s := Session()
 	defer s.Close()
 	c := s.DB(DB_NAME).C(COL_USER_BET)
-	c.Remove(bson.M{"type": typeOfWwa})
+	c.RemoveAll(bson.M{"type": typeOfWwa})
 }
 
 // 按照跨服竞技类型发奖
@@ -280,7 +282,9 @@ func SendUserBetResultMailByType(typeOfWwa int) {
 			SendUserBetGoldBackByWWAWeekId(typeOfWwa, &week)
 		} else {
 			// 参与了战斗
-			totleBetGold += FindUserBetSumByBetUserId(week.Id)
+			curGold := FindUserBetSumByBetUserId(week.Id)
+			revel.INFO.Printf("对%s一共下注了%d元宝", week.Id.Hex(), curGold)
+			totleBetGold += curGold
 		}
 	}
 	revel.INFO.Println("totleBetGold = ", totleBetGold)
