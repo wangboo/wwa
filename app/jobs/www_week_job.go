@@ -15,6 +15,10 @@ type WWAWeekFightBeginJob struct {
 type WWWWeekFightEndJob struct {
 }
 
+// 数据清空定时器
+type WWWWeekCleanJob struct {
+}
+
 // ------------------- 挑战前初始化定时器 -------------------
 
 func (w *WWAWeekFightBeginJob) Run() {
@@ -35,6 +39,13 @@ func FightBeginImpl() {
 func (w *WWWWeekFightEndJob) Run() {
 	defer catchException()
 	models.SendUserBetResultMail()
+}
+
+// ------------------- 数据清空定时器 -------------------
+
+func (w *WWWWeekCleanJob) Run() {
+	defer catchException()
+	models.WwaTypeForeach(models.ResetScore)
 }
 
 // // 挑战结束，发奖

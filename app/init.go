@@ -49,6 +49,9 @@ func init() {
 		jobs.Schedule("0 10 23 * * 6", &mjob.WWAWeekFightBeginJob{})
 		// 周天21点
 		jobs.Schedule("30 30 21 * * 0", &mjob.WWWWeekFightEndJob{})
+		// 巅峰之夜数据清空
+		jobs.Schedule("1 1 0 * * 1", &mjob.WWWWeekCleanJob{})
+
 	})
 }
 
