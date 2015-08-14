@@ -260,7 +260,7 @@ func (w *WWAWeekCtrl) FightResult(zoneId, userId, rst int) revel.Result {
 			wwa, err := models.FindWWAInRedis(zoneId, userId)
 			if err == nil {
 				models.BrocastNoticeToAllGameServer(fmt.Sprintf("玩家%s在巅峰之夜%s段位的对决中大杀四方，无人可挡，已经%d连胜啦！",
-					wwa.Name(), WwaTypeToName(week.Type), lsTimes))
+					wwa.Name(), models.WwaTypeToName(week.Type), lsTimes))
 			}
 		}
 	}
