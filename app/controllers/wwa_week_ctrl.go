@@ -68,11 +68,12 @@ func (w *WWAWeekCtrl) MainPage(zoneId, userId, typeOfWwa int) revel.Result {
 		if sys.IsPlayoffOn[typeOfWwa] {
 			rst["list"] = sys.Top3Cache[typeOfWwa]
 		}
-		if week.Score > 0 {
+		if week.PlayoffScore > 0 {
 			rst["rank"] = models.RankInWeekWWA(week.Score, week.Pow, week.Type)
-			rst["score"] = week.Score
+			rst["score"] = week.PlayoffScore
 		} else {
 			rst["rank"] = -1
+			rst["score"] = 0
 		}
 		return w.RenderJson(rst)
 	default:
