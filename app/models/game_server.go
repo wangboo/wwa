@@ -1,6 +1,7 @@
 package models
 
 import (
+	"encoding/base64"
 	"fmt"
 	"github.com/revel/revel"
 	"gopkg.in/yaml.v2"
@@ -67,9 +68,18 @@ func (g *GameServerConfig) DayEndWwaRewardUrl(str string, Type int) string {
 // 通用奖励邮件
 func (g *GameServerConfig) CommonRewardMail(recv int, msg, reward string) string {
 	// crm = CommonRewardMail
-	msg = url.QueryEscape(msg)
+	msgBase64 := base64.StdEncoding.EncodeToString([]byte(msg))
+	msgBase64 = url.QueryEscape(msgBase64)
 	reward = url.QueryEscape(reward)
-	return fmt.Sprintf("http://%s:%d/%s/admin/wwa/crm?msg=%s&reward=%s&recvId=%d", g.Ip, g.Port, g.Domain, msg, reward, recv)
+	url := fmt.Sprintf("http://%s:%d/%s/admin/wwa/crm?msg=%s&reward=%s&recvId=%d", g.Ip, g.Port, g.Domain, msgBase64, reward, recv)
+	fmt.Println("url = ", url)
+	return url
+}
+
+// 最牛逼英雄信息{q: , heroId: , name}
+// name 玩家名字
+func (g *GameServerConfig) TopHeroInfo(userId int) string {
+	return fmt.Sprintf("http://%s:%d/%s/admin/www/topHeroInfo?userId=%d", g.Ip, g.Port, g.Domain, userId)
 }
 
 func (g *GameServerConfig) Payment() string {

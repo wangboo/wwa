@@ -42,22 +42,26 @@ func (s SortDetailByLevel) Less(a, b int) bool {
 }
 
 func (c ArenaCtrl) GroupData(a, u int) revel.Result {
+	return c.RenderText(GetGroupData(a, u))
+}
+
+func GetGroupData(a, u int) string {
 	cli := models.RedisPool.Get()
 	defer cli.Close()
 	gi, err := cli.Do("GET", models.GroupDataKey(u, a))
 	if err != nil {
-		c.RenderText("redis err %v", err)
+		return fmt.Sprintf("redis err %v", err)
 	}
 	if gi != nil {
-		return c.RenderText("%s", gi)
+		return fmt.Sprintf("%s", gi)
 	}
 	str := models.GetGroupDataFromGameServer(a, u)
 	if len(str) == 0 {
-		return c.RenderText("")
+		return ""
 	}
 	sec := revel.Config.IntDefault("group_data_cache_time", 60)
 	cli.Do("SETEX", models.GroupDataKey(u, a), sec, str)
-	return c.RenderText(str)
+	return str
 }
 
 func (c ArenaCtrl) TopFifty(id int) revel.Result {
@@ -95,7 +99,7 @@ func (c ArenaCtrl) FightResult(s, u, a, us, uu, ua int, win bool) revel.Result {
 		return c.RenderText("redis err %s", err.Error())
 	}
 	// log.Printf("win = %v\n", win)
-	if win {
+	if win && uu > 0 {
 		// 对方扣分
 		if _, err := incrScore(cli, ua, uu, -us); err != nil {
 			return c.RenderText("redis err %s", err.Error())
@@ -155,22 +159,26 @@ func incrScore(cli redis.Conn, a, u, s int) (record models.WWA, err error) {
 
 // 队伍信息
 func (c ArenaCtrl) GroupInfo(u, a int) revel.Result {
+	return c.RenderText(GetGroupInfo(u, a))
+}
+
+func GetGroupInfo(u, a int) string {
 	cli := models.RedisPool.Get()
 	defer cli.Close()
 	gi, err := cli.Do("GET", models.GroupInfoKey(u, a))
 	if err != nil {
-		c.RenderText("redis err %v", err)
+		fmt.Sprintf("redis err %v", err)
 	}
 	if gi != nil {
-		return c.RenderText("%s", gi)
+		return fmt.Sprintf("%s", gi)
 	}
 	str := models.GetGroupInfoFromGameServer(a, u)
 	if len(str) == 0 {
-		return c.RenderText("")
+		return ""
 	}
 	sec := revel.Config.IntDefault("group_info_cache_time", 60)
 	cli.Do("SETEX", models.GroupInfoKey(u, a), sec, str)
-	return c.RenderText(str)
+	return str
 }
 
 func (c *ArenaCtrl) MuInfo(u, a int) revel.Result {

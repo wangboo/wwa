@@ -28,3 +28,8 @@ func (b *BetCtrl) Sum() revel.Result {
 	sum := models.FindBetSum()
 	return b.RenderJson(Succ("sum", sum))
 }
+
+func (b *BetCtrl) SendMail() revel.Result {
+	models.SendUserBetResultMail()
+	return b.RenderJson(Succ())
+}

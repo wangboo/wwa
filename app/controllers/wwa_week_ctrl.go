@@ -2,67 +2,121 @@ package controllers
 
 import (
 	"github.com/revel/revel"
+	"github.com/wangboo/wwa/app/jobs"
 	"github.com/wangboo/wwa/app/models"
-	// "labix.org/v2/mgo"
+	"labix.org/v2/mgo"
 	"labix.org/v2/mgo/bson"
-	"time"
+	// "time"
 )
 
 type WWAWeekCtrl struct {
 	*revel.Controller
 }
 
-const (
-	TYPE_WWW_VIEW_NORMAL    = 0 // 周一到周六显示普通挑战积分（周一至周六，周六11点结算常规赛积分）
-	TYPE_WWW_VIEW_WAIT      = 1 // 准备界面11点到12点，不能点击
-	TYPE_WWW_VIEW_BET       = 2 // 周日下注界面（周六23点到周日0点）
-	TYPE_WWW_VIEW_FIGHT_IN  = 3 // 周日挑战界面（周日20点-21点）参与人员
-	TYPE_WWW_VIEW_FIGHT_OUT = 4 // 周日挑战界面（周日20点-21点）非参与人员
-	TYPE_WWW_VIEW_OVER      = 5 // 周日挑战结果界面（周日21点-周日0点）
-)
-
 // 首页
 // 根据日期来判断现在应该展示何种界面
 func (w *WWAWeekCtrl) MainPage(zoneId, userId, typeOfWwa int) revel.Result {
-	now := time.Now()
-	weekday := now.Weekday()
-	hour := now.Hour()
-	// test
-	// weekday, hour = 0, 10
-	switch weekday {
-	case 0:
-		// 周天
-		if hour < 19 {
-			// 下注界面
-			return w.ShowTop20(zoneId, userId, typeOfWwa, TYPE_WWW_VIEW_BET)
-		} else {
-			// 挑战界面
-			return w.ShowTop20(zoneId, userId, typeOfWwa, TYPE_WWW_VIEW_FIGHT_IN)
-		}
-	case 6:
-		if hour > 23 {
-			// 周六 提示：巅峰之夜准备中，请在周日0点以后查看
-			return w.RenderJson(FailWithMsg("巅峰之夜准备中，请在周日0点以后查看"))
-		} else {
-			// 显示
-			return w.ShowTop20(zoneId, userId, typeOfWwa, TYPE_WWW_VIEW_NORMAL)
+	// 结果
+	var resp map[string]interface{}
+	var week *models.UserWWAWeek
+	var err error
+	typeOfView := models.GetSysWWAWeekState()
+	// 获取玩家巅峰之夜数据
+	switch typeOfView {
+	case models.TYPE_WWW_VIEW_FIGHT_IN:
+		week, err = models.FindWWAWeekByZoneIdAndUserId(zoneId, userId)
+		if err != nil {
+			if err == mgo.ErrNotFound {
+				// 找不到玩家数据
+				typeOfView = models.TYPE_WWW_VIEW_FIGHT_OUT
+			} else {
+				return w.RenderJson(FailWithError(err))
+			}
 		}
 	default:
-		// 周一到周五
-		return w.ShowTop20(zoneId, userId, typeOfWwa, TYPE_WWW_VIEW_NORMAL)
+		week, err = models.FindOrCreateWWAWeekByZoneIdAndUserId(zoneId, userId)
+		if err != nil {
+			return w.RenderJson(FailWithError(err))
+		}
 	}
-	return w.RenderJson(Succ())
+	// 判断当前状态
+	switch typeOfView {
+	case models.TYPE_WWW_VIEW_FIGHT_IN:
+		if week.IsFinish {
+			// 挑战完毕后会现实积分界面
+			resp = w.ShowTop20(week, zoneId, userId, typeOfWwa, models.TYPE_WWW_VIEW_FIGHT_OUT)
+		} else {
+			resp = w.FightInView(week, zoneId, userId, typeOfWwa)
+		}
+	case models.TYPE_WWW_VIEW_PREPARE:
+		resp = FailWithMsg("巅峰之夜准备中，请在周日0点以后查看")
+	case models.TYPE_WWW_VIEW_OVER:
+		selfWWA, err := models.FindWWAInRedis(zoneId, userId)
+		if err != nil {
+			return w.RenderJson(FailWithError(err))
+		}
+		if typeOfWwa == -1 {
+			typeOfWwa = selfWWA.Type()
+		}
+		sys := models.FindSysWWAWeek()
+		rst := Succ()
+		rst["typeOfView"] = models.TYPE_WWW_VIEW_OVER
+		rst["typeOfWwa"] = typeOfWwa
+		rst["typeOfMine"] = selfWWA.Type()
+		rst["open"] = sys.IsPlayoffOn[typeOfWwa]
+		if sys.IsPlayoffOn[typeOfWwa] {
+			rst["list"] = sys.Top3Cache[typeOfWwa]
+		}
+		if week.Score > 0 {
+			rst["rank"] = models.RankInWeekWWA(week.Score, week.Pow, week.Type)
+			rst["score"] = week.Score
+		} else {
+			rst["rank"] = -1
+		}
+		return w.RenderJson(rst)
+	default:
+		resp = w.ShowTop20(week, zoneId, userId, typeOfWwa, typeOfView)
+	}
+	return w.RenderJson(resp)
+}
+
+// 巅峰竞技，挑战界面
+func (w *WWAWeekCtrl) FightInView(week *models.UserWWAWeek, zoneId, userId, typeOfWwa int) map[string]interface{} {
+	rst := Succ()
+	// score, pow, typeOfWwa
+	rst["open"] = true
+	rst["typeOfView"] = models.TYPE_WWW_VIEW_FIGHT_IN
+	rst["rank"] = models.RankInWeekWWA(week.PlayoffScore, week.Pow, week.Type)
+	rst["score"] = week.PlayoffScore
+	fightedSize := len(week.FightedList)
+	waitSize := len(week.WaitList)
+	max := fightedSize + waitSize
+	rst["cur"] = fightedSize
+	if week.FightingId.Valid() {
+		max += 1
+	}
+	rst["mx"] = max
+	// 积分
+	win, lose, deuce := 0, 0, 0
+	for _, item := range week.FightedList {
+		switch item.FightRst {
+		case 0:
+			win += 1
+		case 1:
+			lose += 1
+		case 2:
+			deuce += 1
+		}
+	}
+	rst["score"], rst["win"], rst["deuce"], rst["lose"] = week.PlayoffScore, win, deuce, lose
+	return rst
 }
 
 // 周一到周六显示巅峰竞技排行
-func (w *WWAWeekCtrl) ShowTop20(zoneId, userId, typeOfWwa, typeOfView int) revel.Result {
-	selfWeek, err := models.FindWWAWeekByZoneIdAndUserId(zoneId, userId)
-	if err != nil {
-		return w.RenderJson(FailWithError(err))
-	}
+func (w *WWAWeekCtrl) ShowTop20(selfWeek *models.UserWWAWeek, zoneId, userId, typeOfWwa, typeOfView int) map[string]interface{} {
 	selfWWA, err := models.FindWWAInRedis(zoneId, userId)
 	if err != nil {
-		return w.RenderJson(FailWithError(err))
+		return FailWithError(err)
 	}
 	revel.INFO.Println("selfWWA.Type() = ", selfWWA.Type())
 	if typeOfWwa == -1 {
@@ -81,41 +135,60 @@ func (w *WWAWeekCtrl) ShowTop20(zoneId, userId, typeOfWwa, typeOfView int) revel
 		rst["rank"] = -1
 	}
 	list := []map[string]interface{}{}
-	for index, week := range top20 {
-		info := bson.M{}
-		item, err := models.FindWWAInRedis(week.ZoneId, week.UserId)
-		if err != nil {
-			continue
-		}
-		info["id"] = week.Id.Hex()
-		info["zoneId"] = item.ZoneId()
-		info["userId"] = item.UserId()
-		info["frame"] = item.Frame()
-		info["img"] = item.Img()
-		info["pow"] = item.Pow()
-		info["rank"] = index + 1
-		info["zoneName"] = item.ZoneName()
-		info["name"] = item.Name()
-		info["level"] = item.Level()
-		switch typeOfView {
-		case TYPE_WWW_VIEW_NORMAL:
-			info["score"] = week.Score
-		case TYPE_WWW_VIEW_BET:
-			info["score"] = week.Score
-			// 对他的下注金额
-			info["gold"] = models.FindUserBetInUserSum(zoneId, userId, week.Id)
-		case TYPE_WWW_VIEW_FIGHT_IN:
-			info["score"] = week.PlayoffScore
-		case TYPE_WWW_VIEW_OVER:
-			info["score"] = week.PlayoffScore
-		}
-		list = append(list, info)
+	// 开赛条件检查
+	showDetail := true
+	if typeOfView == models.TYPE_WWW_VIEW_BET_ENABLE ||
+		typeOfView == models.TYPE_WWW_VIEW_BET_DISABLE ||
+		typeOfView == models.TYPE_WWW_VIEW_FIGHT_OUT ||
+		typeOfView == models.TYPE_WWW_VIEW_OVER {
+		sys := models.FindSysWWAWeek()
+		showDetail = sys.IsPlayoffOn[typeOfWwa]
+		rst["open"] = showDetail
 	}
-	if typeOfView == TYPE_WWW_VIEW_BET {
+	// 满足开赛条件
+	if showDetail {
+		for index, week := range top20 {
+			info := bson.M{}
+			item, err := models.FindWWAInRedis(week.ZoneId, week.UserId)
+			if err != nil {
+				continue
+			}
+			info["id"] = week.Id.Hex()
+			info["zoneId"] = item.ZoneId()
+			info["userId"] = item.UserId()
+			info["frame"] = item.Frame()
+			info["img"] = item.Img()
+			info["pow"] = item.Pow()
+			info["rank"] = index + 1
+			info["zoneName"] = item.ZoneName()
+			info["type"] = item.Type()
+			info["name"] = item.Name()
+			info["level"] = item.Level()
+			switch typeOfView {
+			case models.TYPE_WWW_VIEW_NORMAL:
+				info["score"] = week.Score
+			case models.TYPE_WWW_VIEW_BET_DISABLE:
+				info["score"] = 0
+			case models.TYPE_WWW_VIEW_BET_ENABLE:
+				info["score"] = week.Score
+				// 对他的下注金额
+				info["gold"] = models.FindUserBetInUserSum(zoneId, userId, week.Id)
+			case models.TYPE_WWW_VIEW_FIGHT_IN:
+				info["score"] = week.PlayoffScore
+			case models.TYPE_WWW_VIEW_FIGHT_OUT:
+				info["score"] = week.PlayoffScore
+			case models.TYPE_WWW_VIEW_OVER:
+				info["score"] = week.PlayoffScore
+			}
+			list = append(list, info)
+		}
+	}
+
+	if typeOfView == models.TYPE_WWW_VIEW_BET_ENABLE {
 		rst["bet"] = models.FindUserBetSum(zoneId, userId)
 	}
 	rst["list"] = list
-	return w.RenderJson(rst)
+	return rst
 }
 
 // 获得下一位挑战者信息
@@ -158,8 +231,78 @@ func (w *WWAWeekCtrl) FightResult(zoneId, userId, rst int) revel.Result {
 	if len(week.WaitList) > 0 {
 		week.FightingId = week.WaitList[0]
 		week.WaitList = week.WaitList[1:]
+	} else {
+		week.IsFinish = true
 	}
+	week.PlayoffScore += score
 	// save
 	week.Save()
+	return w.RenderJson(Succ("score", score))
+}
+
+// 挑战对象玩家的基本信息
+func (w *WWAWeekCtrl) FightInfo(zoneId, userId int) revel.Result {
+	week, err := models.FindWWAWeekByZoneIdAndUserId(zoneId, userId)
+	if err != nil {
+		return w.RenderJson(FailWithError(err))
+	}
+	if !week.FightingId.Valid() {
+		return w.RenderJson(FailWithMsg("找不到对方玩家信息"))
+	}
+	fweek, err := models.FindWWAWeekById(week.FightingId)
+	if err != nil {
+		return w.RenderJson(FailWithError(err))
+	}
+	wwa, err := models.FindWWAInRedis(fweek.ZoneId, fweek.UserId)
+	if err != nil {
+		return w.RenderJson(FailWithError(err))
+	}
+	rst := Succ("uid", fweek.UserId, "aid", fweek.ZoneId, "lev", wwa.Level())
+	return w.RenderJson(rst)
+}
+
+// 挑战
+func (w *WWAWeekCtrl) Fight(zoneId, userId int) revel.Result {
+	week, err := models.FindWWAWeekByZoneIdAndUserId(zoneId, userId)
+	if err != nil {
+		return w.RenderJson(FailWithError(err))
+	}
+	if !week.FightingId.Valid() {
+		return w.RenderJson(FailWithMsg("找不到对方玩家信息"))
+	}
+	fweek, err := models.FindWWAWeekById(week.FightingId)
+	if err != nil {
+		return w.RenderJson(FailWithError(err))
+	}
+	return w.RenderText(GetGroupData(fweek.ZoneId, fweek.UserId))
+}
+
+// 开赛手动触发定时器
+func (w *WWAWeekCtrl) BeginFight() revel.Result {
+	beginJob := mjob.WWAWeekFightBeginJob{}
+	beginJob.Run()
+	return w.RenderJson(Succ())
+}
+
+// 更换临时巅峰竞技类型
+func (w *WWAWeekCtrl) ChangeType(zoneId, userId, typeOfWwa, lev int) revel.Result {
+	state := models.GetSysWWAWeekState()
+	// 只有在非开启巅峰之夜模式下才能变换
+	if state != models.TYPE_WWW_VIEW_NORMAL {
+		return w.RenderJson(Succ())
+	}
+	week, err := models.FindWWAWeekByZoneIdAndUserId(zoneId, userId)
+	if err != nil {
+		return w.RenderJson(FailWithError(err))
+	}
+	week.Type = typeOfWwa
+	week.Save()
+	wwa, err := models.FindWWAInRedis(zoneId, userId)
+	if err != nil {
+		return w.RenderJson(FailWithError(err))
+	}
+	wwa.SetLevel(lev)
+	wwa.SetType(typeOfWwa)
+	wwa.UpdateToRedis()
 	return w.RenderJson(Succ())
 }

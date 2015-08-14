@@ -50,11 +50,21 @@ GET /user/changeServer		User.ChangeServer
 GET 	/www/main 					WWAWeekCtrl.MainPage
 # 挑战结果
 GET 	/www/fr 						WWAWeekCtrl.FightResult
+# 挑战者信息
+GET 	/www/fightInfo 			WWAWeekCtrl.FightInfo
+# 挑战
+GET 	/www/fight 					WWAWeekCtrl.Fight
+# 更改玩家巅峰竞技分段
+GET 	/www/change 				WWAWeekCtrl.ChangeType
 
 # 下注奖池总和
 GET 	/www/betSum 				BetCtrl.Sum
 # 下注
 GET 	/www/bet 						BetCtrl.Bet
+# 开赛
+GET 	/job/wwwBegin 			WWAWeekCtrl.BeginFight
+# 发奖
+GET 	/job/reward 				BetCtrl.SendMail
 
 # --------------消费查询------------------
 GET 	/payment 						App.Payment
