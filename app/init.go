@@ -45,6 +45,10 @@ func init() {
 		jobs.Schedule("45 22 0 * * ?", &mjob.DayEndRewardJob{})
 		// jobs.Now(&mjob.RankDataJob{})
 		jobs.Schedule("0 0 0 * * ?", &mjob.UserInvDailyJobReset{})
+		// 周六结算
+		jobs.Schedule("0 10 23 * * 6", &mjob.WWAWeekFightBeginJob{})
+		// 周天21点
+		jobs.Schedule("30 30 21 * * 0", &mjob.WWWWeekFightEndJob{})
 	})
 }
 

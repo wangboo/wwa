@@ -343,6 +343,8 @@ func CacheWWWTop3UserCache(typeOfWwa int, sys *SysWWAWeek, list []UserWWAWeek) {
 			if err != nil {
 				revel.ERROR.Println("json unmarshal err ", err)
 			} else {
+				info["aid"] = week.ZoneId
+				info["uid"] = week.UserId
 				cacheList = append(cacheList, info)
 			}
 		}
