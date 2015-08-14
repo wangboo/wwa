@@ -56,6 +56,8 @@ GET 	/www/fightInfo 			WWAWeekCtrl.FightInfo
 GET 	/www/fight 					WWAWeekCtrl.Fight
 # 更改玩家巅峰竞技分段
 GET 	/www/change 				WWAWeekCtrl.ChangeType
+# 消息全游戏广播
+# GET 	/www/notice 				WWAWeekCtrl.NoticeOnTV
 
 # 下注奖池总和
 GET 	/www/betSum 				BetCtrl.Sum
