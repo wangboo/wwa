@@ -342,7 +342,7 @@ func findUserTaskInfoLevelGtSize(userTaskInfos []*models.UserTaskInfo, level int
 			size += 1
 		}
 	}
-	revel.INFO.Println("size = ", size)
+	// revel.INFO.Println("size = ", size)
 	return size
 }
 
