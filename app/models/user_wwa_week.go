@@ -130,6 +130,10 @@ func FindWWAWeekById(Id bson.ObjectId) (week *UserWWAWeek, err error) {
 
 // 增加或减少积分 return true if success
 func UserWWAWeekScoreChange(zoneId, userId, score, typeOfWwa int) bool {
+	if time.Now().Weekday() == 0 {
+		// 星期天不计入季前赛积分
+		return
+	}
 	s := Session()
 	defer s.Close()
 	c := s.DB(DB_NAME).C(COL_USER_WWA_WEEK)
@@ -312,7 +316,7 @@ func GetSysWWAWeekState() int {
 	weekday := now.Weekday()
 	hour := now.Hour()
 	// test
-	weekday, hour = 0, 23
+	weekday, hour = 2, 10
 	// 结果
 	// switch weekday {
 	// case 0:

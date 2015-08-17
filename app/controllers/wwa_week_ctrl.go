@@ -116,12 +116,14 @@ func (w *WWAWeekCtrl) FightInView(week *models.UserWWAWeek, zoneId, userId, type
 	if err == nil {
 		wwa, err := models.FindWWAInRedis(fightWeek.ZoneId, fightWeek.UserId)
 		if err == nil {
-			rst["pow"] = week.Pow
+			rst["pow"] = wwa.Pow()
 			rst["name"] = wwa.Name()
 			rst["lev"] = wwa.Level()
 			rst["zoneName"] = wwa.ZoneName()
 			rst["frame"] = wwa.Frame()
 			rst["img"] = wwa.Img()
+			rst["aid"] = fightWeek.ZoneId
+			rst["uid"] = fightWeek.UserId
 		}
 	}
 	return rst

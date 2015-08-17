@@ -67,6 +67,7 @@ func SaveDataByServerAndType(cli redis.Conn, s *models.GameServerConfig, t int) 
 		week, err := models.FindWWAWeekByZoneIdAndUserId(s.ZoneId, rank.UserId)
 		if err == nil {
 			week.Type = t
+			week.Pow = rank.Pow
 			week.Save()
 		}
 		revel.INFO.Println("rank = ", rank)
