@@ -134,7 +134,7 @@ func FindWWAWeekById(Id bson.ObjectId) (week *UserWWAWeek, err error) {
 
 // 增加或减少积分 return true if success
 func UserWWAWeekScoreChange(zoneId, userId, score, typeOfWwa int) bool {
-	if IsWeekend {
+	if IsWeekend() {
 		// 星期天不计入季前赛积分
 		return
 	}
@@ -315,7 +315,7 @@ func UpdateSysWWAWeek(sys *SysWWAWeek) {
 	c.UpdateId(sys.Id, sys)
 }
 
-func IsWeekend() {
+func IsWeekend() bool {
 	return time.Now().Weekday() == 0 || true
 }
 
