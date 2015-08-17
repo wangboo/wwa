@@ -87,7 +87,7 @@ func FindUserBetInUserSum(zoneId, userId int, betUserId bson.ObjectId) int {
 	}).One(rst)
 	sum := 0
 	if err != nil {
-		revel.ERROR.Println("error ", err)
+		revel.INFO.Println("error ", err)
 	} else {
 		sum = rst["totle"].(int)
 		// revel.INFO.Println("sum = ", sum)
