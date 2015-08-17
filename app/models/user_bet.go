@@ -211,7 +211,7 @@ func SendUserBetResultMail() {
 		// 参与选手发奖
 		SendUserWWAWeekRewardMail(typeOfWwa)
 		// 备份选手数据
-		ResetScore(typeOfWwa)
+		// ResetScore(typeOfWwa)
 	})
 }
 
