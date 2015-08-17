@@ -221,7 +221,7 @@ func SendUserWWAWeekRewardMail(typeOfWwa int) {
 	if len(list) > 0 {
 		firstRank := list[0]
 		wwa, err := FindWWAInRedis(firstRank.ZoneId, firstRank.UserId)
-		if err == nil {
+		if err == nil && len(firstRank.FightedList) > 0 {
 			msg := fmt.Sprintf("恭喜玩家%s在巅峰之夜%s段位的对决中傲视群雄，登上至尊王座！", wwa.Name(),
 				WwaTypeToName(typeOfWwa))
 			BrocastNoticeToAllGameServerWithTimeInterval(msg, 3, 60)
@@ -349,14 +349,25 @@ func CacheWWWTop3UserCache(typeOfWwa int, sys *SysWWAWeek, list []UserWWAWeek) {
 			}
 		}
 	}
-	// cacheData["list"] = cacheList
-	// data, err := json.Marshal(cacheData)
-	// if err != nil {
-	// 	revel.ERROR.Println("json marshal err", err)
-	// }
-	// dataStr := string(data)
-	// revel.INFO.Printf("cache typeOfWwa = %d, data = %s \n", typeOfWwa, dataStr)
+	// firstRank
+	name := ""
+	if len(list) == 0 {
+		firstRank := list[0]
+		wwa, err := FindWWAInRedis(firstRank.ZoneId, firstRank.UserId)
+		if err != nil {
+			name = wwa.Name()
+		}
+	}
 	sys.Top3Cache[typeOfWwa] = cacheList
+	cli := RedisPool.Get()
+	defer cli.Close()
+	cli.Do("SET", fmt.Sprintf("wwa_%d_first_rank", typeOfWwa))
+	if typeOfWwa == 3 {
+		BrocastToAllGameServer(func(gs *GameServerConfig) {
+			url := gs.WWWNiubestUserNameUrl(name)
+			GetGameServer(url)
+		})
+	}
 	UpdateSysWWAWeek(sys)
 }
 

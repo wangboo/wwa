@@ -95,6 +95,13 @@ func (g *GameServerConfig) Payment() string {
 	return fmt.Sprintf("http://%s:%d/%s/admin/charge", g.Ip, g.Port, g.Domain)
 }
 
+func (g *GameServerConfig) WWWNiubestUserNameUrl(name string) string {
+	msgBase64 := base64.StdEncoding.EncodeToString([]byte(name))
+	msgBase64 = url.QueryEscape(msgBase64)
+	url := fmt.Sprintf("http://%s:%d/%s/admin/www/niubest?msg=%s", g.Ip, g.Port, g.Domain, msgBase64)
+	return url
+}
+
 // 广播
 func BrocastNoticeToAllGameServer(msg string) {
 	go func() {
@@ -114,6 +121,14 @@ func BrocastNoticeToAllGameServerWithTimeInterval(msg string, times, secInterval
 			time.Sleep(time.Duration(secInterval) * time.Second)
 		}
 	}(msg, times, secInterval)
+}
+
+func BrocastToAllGameServer(fn func(gs *GameServerConfig)) {
+	go func() {
+		for _, gs := range GameServerList {
+			fn(&gs)
+		}
+	}()
 }
 
 var (
