@@ -34,6 +34,9 @@ func (w *WWAWeekCtrl) MainPage(zoneId, userId, typeOfWwa int) revel.Result {
 				return w.RenderJson(FailWithError(err))
 			}
 		}
+		if len(week.WaitList) == 0 {
+			typeOfView = models.TYPE_WWW_VIEW_FIGHT_OUT
+		}
 	default:
 		week, err = models.FindOrCreateWWAWeekByZoneIdAndUserId(zoneId, userId)
 		if err != nil {

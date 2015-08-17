@@ -22,6 +22,7 @@ type UserWWAWeek struct {
 	PlayoffScore int             `bson:"playoff_score"`         // 季后赛积分
 	CreatedAt    time.Time       `bson:"created_at"`            // 创建时间
 	IsSend       bool            `bson:"is_send"`               // 是否发放奖励
+	InTop20      bool            `bson:"in_top20"`              // 是否进入季后赛前20
 }
 
 // 挑战结果
@@ -97,6 +98,7 @@ func findWWAWeekByZoneIdAndUserIdWithCreateFlag(zoneId, userId int, create bool)
 			week.ZoneId = zoneId
 			week.UserId = userId
 			week.Pow = wwa.Pow()
+			week.InTop20 = false
 			if IsWeekend() {
 				week.Score = 0
 			} else {
@@ -157,7 +159,7 @@ func UserWWAWeekTop20(typeOfWwa int) (list []UserWWAWeek) {
 	defer s.Close()
 	c := s.DB(DB_NAME).C(COL_USER_WWA_WEEK)
 	list = []UserWWAWeek{}
-	c.Find(bson.M{"type": typeOfWwa}).Sort("-playoff_score", "-pow").Limit(WWA_WEEK_RANK_SIZE_LIMIT).All(&list)
+	c.Find(bson.M{"type": typeOfWwa, "in_top20": true}).Sort("-playoff_score", "-pow").Limit(WWA_WEEK_RANK_SIZE_LIMIT).All(&list)
 	return
 }
 
@@ -230,6 +232,7 @@ func UserWWAWeekSwitch2PlayoffByType(typeOfWwa int) {
 		}
 		week.FightingId = AllOtherIds[0]
 		week.WaitList = AllOtherIds[1:]
+		week.InTop20 = true
 		c.Insert(week)
 	}
 }
