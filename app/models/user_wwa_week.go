@@ -344,6 +344,13 @@ func GetSysWWAWeekState() int {
 		} else {
 			return TYPE_WWW_VIEW_OVER
 		}
+	} else if weekday == 1 {
+		if hour < 12 {
+			// 周一1点前
+			return TYPE_WWW_VIEW_OVER
+		} else {
+			return TYPE_WWW_VIEW_NORMAL
+		}
 	} else if weekday == 6 {
 		if hour >= 23 {
 			// 周六 提示：巅峰之夜准备中，请在周日0点以后查看

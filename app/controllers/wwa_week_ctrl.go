@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"fmt"
+	"github.com/garyburd/redigo/redis"
 	"github.com/revel/revel"
 	"github.com/wangboo/wwa/app/jobs"
 	"github.com/wangboo/wwa/app/models"
@@ -34,7 +35,7 @@ func (w *WWAWeekCtrl) MainPage(zoneId, userId, typeOfWwa int) revel.Result {
 				return w.RenderJson(FailWithError(err))
 			}
 		}
-		if len(week.WaitList) == 0 {
+		if !week.InTop20 {
 			typeOfView = models.TYPE_WWW_VIEW_FIGHT_OUT
 		}
 	default:
@@ -361,4 +362,15 @@ func (w *WWAWeekCtrl) NoticeOnTV(msg string, repeat bool, times, sec int) revel.
 		models.BrocastNoticeToAllGameServerWithTimeInterval(msg, times, sec)
 	}
 	return w.RenderJson(Succ())
+}
+
+// 最牛逼的玩家名
+func (w *WWAWeekCtrl) Niubest() revel.Result {
+	cli := models.RedisPool.Get()
+	defer cli.Close()
+	name, err := redis.String(cli.Do("GET", "wwa_3_first_rank"))
+	if err != nil {
+		return w.RenderJson(Succ("name", ""))
+	}
+	return w.RenderJson(Succ("name", name))
 }
