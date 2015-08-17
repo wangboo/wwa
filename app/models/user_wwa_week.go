@@ -97,7 +97,11 @@ func findWWAWeekByZoneIdAndUserIdWithCreateFlag(zoneId, userId int, create bool)
 			week.ZoneId = zoneId
 			week.UserId = userId
 			week.Pow = wwa.Pow()
-			week.Score = wwa.Score()
+			if IsWeekend() {
+				week.Score = 0
+			} else {
+				week.Score = wwa.Score()
+			}
 			week.Type = wwa.Type()
 			week.CreatedAt = time.Now()
 			week.FightedList = []FightResult{}
@@ -130,7 +134,7 @@ func FindWWAWeekById(Id bson.ObjectId) (week *UserWWAWeek, err error) {
 
 // 增加或减少积分 return true if success
 func UserWWAWeekScoreChange(zoneId, userId, score, typeOfWwa int) bool {
-	if time.Now().Weekday() == 0 {
+	if IsWeekend {
 		// 星期天不计入季前赛积分
 		return
 	}
@@ -309,6 +313,10 @@ func UpdateSysWWAWeek(sys *SysWWAWeek) {
 	defer s.Close()
 	c := s.DB(DB_NAME).C(COL_SYS_WWA_WEEK)
 	c.UpdateId(sys.Id, sys)
+}
+
+func IsWeekend() {
+	return time.Now().Weekday() == 0 || true
 }
 
 func GetSysWWAWeekState() int {
