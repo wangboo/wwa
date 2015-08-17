@@ -136,7 +136,7 @@ func FindWWAWeekById(Id bson.ObjectId) (week *UserWWAWeek, err error) {
 func UserWWAWeekScoreChange(zoneId, userId, score, typeOfWwa int) bool {
 	if IsWeekend() {
 		// 星期天不计入季前赛积分
-		return
+		return false
 	}
 	s := Session()
 	defer s.Close()
