@@ -312,7 +312,9 @@ func FindSysWWAWeek() *SysWWAWeek {
 		week.Top3Cache = append(week.Top3Cache, cacheSample)
 		week.Top3Cache = append(week.Top3Cache, cacheSample)
 	}
+	//revel.INFO.Println("sys_bets = ", week.SysBets)
 	if len(week.SysBets) == 0 {
+	//	revel.INFO.Println("init sys_bets")
 		week.SysBets = []int{0, 0, 0, 0}
 	}
 	return week
@@ -323,6 +325,7 @@ func UpdateSysWWAWeek(sys *SysWWAWeek) {
 	s := Session()
 	defer s.Close()
 	c := s.DB(DB_NAME).C(COL_SYS_WWA_WEEK)
+	//revel.INFO.Println("update sys_bets = ", sys.SysBets)
 	c.UpdateId(sys.Id, sys)
 }
 
@@ -342,7 +345,7 @@ func GetSysWWAWeekState() int {
 	weekday := now.Weekday()
 	hour := now.Hour()
 	// test
-	weekday, hour = 2, 10
+	weekday, hour = 0, 23
 	// 结果
 	// switch weekday {
 	// case 0:

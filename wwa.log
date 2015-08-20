@@ -1,0 +1,5 @@
+WARN  2015/07/08 15:52:50 static.go:97: File not found (/home/chengdu/wwa/src/github.com/wangboo/wwa/public/js/ipb.js): stat /home/chengdu/wwa/src/github.com/wangboo/wwa/public/js/ipb.js: no such file or directory 
+WARN  2015/07/08 15:52:50 static.go:97: File not found (/home/chengdu/wwa/src/github.com/wangboo/wwa/public/js/ipb.js): stat /home/chengdu/wwa/src/github.com/wangboo/wwa/public/js/ipb.js: no such file or directory 
+WARN  2015/07/08 15:52:50 static.go:97: File not found (/home/chengdu/wwa/src/github.com/wangboo/wwa/public/js/ipb.js): stat /home/chengdu/wwa/src/github.com/wangboo/wwa/public/js/ipb.js: no such file or directory 
+WARN  2015/07/08 15:52:50 static.go:97: File not found (/home/chengdu/wwa/src/github.com/wangboo/wwa/public/js/ipb.js): stat /home/chengdu/wwa/src/github.com/wangboo/wwa/public/js/ipb.js: no such file or directory 
+WARN  2015/07/09 09:10:35 static.go:97: File not found (/home/chengdu/wwa/src/github.com/wangboo/wwa/public/js/ipb.js): stat /home/chengdu/wwa/src/github.com/wangboo/wwa/public/js/ipb.js: no such file or directory 

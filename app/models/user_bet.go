@@ -51,15 +51,17 @@ func BetTo(zoneId, userId, gold int, betUserId bson.ObjectId) (bet *UserBet, err
 	} else {
 		bet.Gold += gold
 		c.UpdateId(bet.Id, bson.M{"$set": bson.M{"gold": bet.Gold}})
-		updateSysBetAddGold(bet.Type, 50)
 	}
+	updateSysBetAddGold(bet.Type, 50)
 	return
 }
 
 func updateSysBetAddGold(typeOfWwa, gold int) {
 	sysWeek := FindSysWWAWeek()
 	sysWeek.SysBets[typeOfWwa] += gold
-	sysWeek.UpdateGold()
+	revel.INFO.Println("sys_bets = ", sysWeek.SysBets)
+	//sysWeek.UpdateGold()
+	UpdateSysWWAWeek(sysWeek)
 }
 
 // 查询玩家总下注
