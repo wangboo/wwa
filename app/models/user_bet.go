@@ -253,10 +253,12 @@ func SendUserWWAWeekRewardMail(typeOfWwa int) {
 				// 1-3名额外的buff奖励
 				content = fmt.Sprintf("恭喜您在跨服竞技巅峰之夜%s段位获得第%d名的好成绩,并获得了%s称号增伤免伤加成%s持续至下周%s,请点击领取奖励。",
 					WwaTypeToName(typeOfWwa),
+					rank,
 					RankToTitle(rank),
 					RankToBuffAddStr(rank),
 					RankToBuffEndWeekendStr(rank))
 				rankTitleNoticeUrl := gs.RankTitleNoticeUrl(typeOfWwa, rank, week.UserId)
+				revel.INFO.Println("rankTitleNoticeUrl = ", rankTitleNoticeUrl)
 				GetGameServer(rankTitleNoticeUrl)
 			} else {
 				content = fmt.Sprintf("恭喜您在跨服竞技巅峰之夜%s段位获得第%d名的好成绩,请点击领取奖励。", WwaTypeToName(typeOfWwa), rank)

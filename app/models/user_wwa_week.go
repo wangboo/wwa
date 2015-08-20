@@ -39,7 +39,7 @@ const (
 	// 巅峰之夜每个段位参与挑战人数
 	WWA_WEEK_RANK_SIZE_LIMIT = 20
 	// 巅峰之夜每个段位开赛最小人数
-	WWA_WEEK_PLAYOFF_ON_MIN_SIZE = 3 // 正式环境为 5
+	WWA_WEEK_PLAYOFF_ON_MIN_SIZE = 5 // 正式环境为 5
 )
 
 // 系统巅峰竞技状态
@@ -257,6 +257,9 @@ func ResetScore(typeOfWwa int) {
 	}
 	colWeek := s.DB(DB_NAME).C(COL_USER_WWA_WEEK)
 	colWeek.RemoveAll(bson.M{"type": typeOfWwa})
+	sysWeek := FindSysWWAWeek()
+	sysWeek.SysBets = []int{0, 0, 0, 0}
+	UpdateSysWWAWeek(sysWeek)
 }
 
 // 找到积分大于score或者(积分等于score且战斗力大于pow)的所有玩家的数量
