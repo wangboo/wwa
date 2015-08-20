@@ -51,8 +51,15 @@ func BetTo(zoneId, userId, gold int, betUserId bson.ObjectId) (bet *UserBet, err
 	} else {
 		bet.Gold += gold
 		c.UpdateId(bet.Id, bson.M{"$set": bson.M{"gold": bet.Gold}})
+		updateSysBetAddGold(bet.Type, 50)
 	}
 	return
+}
+
+func updateSysBetAddGold(typeOfWwa, gold int) {
+	sysWeek := FindSysWWAWeek()
+	sysWeek.SysBets[typeOfWwa] += gold
+	sysWeek.UpdateGold()
 }
 
 // 查询玩家总下注
@@ -130,6 +137,8 @@ func FindBetSumByType(typeOfWwa int) int {
 	} else {
 		sum = rst["totle"].(int)
 	}
+	sys := FindSysWWAWeek()
+	sum += sys.SysBets[typeOfWwa]
 	return sum
 }
 
@@ -239,7 +248,19 @@ func SendUserWWAWeekRewardMail(typeOfWwa int) {
 				continue
 			}
 			gs := FindGameServer(week.ZoneId)
-			content := fmt.Sprintf("恭喜您在跨服竞技巅峰之夜%s段位获得第%d名的好成绩，请点击领取奖励。", WwaTypeToName(typeOfWwa), rank)
+			var content string
+			if rank < 4 {
+				// 1-3名额外的buff奖励
+				content = fmt.Sprintf("恭喜您在跨服竞技巅峰之夜%s段位获得第%d名的好成绩,并获得了%s称号增伤免伤加成%s持续至下周%s,请点击领取奖励。",
+					WwaTypeToName(typeOfWwa),
+					RankToTitle(rank),
+					RankToBuffAddStr(rank),
+					RankToBuffEndWeekendStr(rank))
+				rankTitleNoticeUrl := gs.RankTitleNoticeUrl(typeOfWwa, rank, week.UserId)
+				GetGameServer(rankTitleNoticeUrl)
+			} else {
+				content = fmt.Sprintf("恭喜您在跨服竞技巅峰之夜%s段位获得第%d名的好成绩,请点击领取奖励。", WwaTypeToName(typeOfWwa), rank)
+			}
 			revel.INFO.Println("content: ", content)
 			url := gs.CommonRewardMail(week.UserId,
 				content,
@@ -250,6 +271,7 @@ func SendUserWWAWeekRewardMail(typeOfWwa int) {
 			} else {
 				revel.INFO.Println("send reward resp ", resp)
 			}
+
 		}
 	}
 }
@@ -296,6 +318,7 @@ func SendUserBetResultMailByType(typeOfWwa int) {
 			totleBetGold += curGold
 		}
 	}
+	totleBetGold += sys.SysBets[typeOfWwa]
 	revel.INFO.Println("totleBetGold = ", totleBetGold)
 	// 计算押注给冠军的总金额
 	betToWinnerList := FindUserBetsByBetUserId(winner.Id)

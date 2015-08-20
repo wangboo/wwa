@@ -102,6 +102,12 @@ func (g *GameServerConfig) WWWNiubestUserNameUrl(name string) string {
 	return url
 }
 
+// 通知游戏服务器巅峰之夜冠名信息
+func (g *GameServerConfig) RankTitleNoticeUrl(typeOfWwa, rank, userId int) string {
+	return fmt.Sprintf("http://%s:%d/%s/admin/www/setWwwTitle?type=%d&rank=%d&userId=%d", g.Ip, g.Port, g.Domain,
+		typeOfWwa, rank, userId)
+}
+
 // 广播
 func BrocastNoticeToAllGameServer(msg string) {
 	go func() {

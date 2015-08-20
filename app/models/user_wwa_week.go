@@ -48,6 +48,7 @@ type SysWWAWeek struct {
 	State       int                        `bson:"state"`         // 巅峰竞技状态
 	IsPlayoffOn []bool                     `bson:"is_playoff_on"` // 巅峰竞技是否满足开赛条件
 	Top3Cache   [][]map[string]interface{} `bson:"top3_cache"`    // 每个段位前3
+	SysBets     []int                      `bson:sys_bets`        // 系统押注补发元宝
 }
 
 const (
@@ -296,6 +297,7 @@ func FindSysWWAWeek() *SysWWAWeek {
 			week.Id = bson.NewObjectId()
 			week.IsPlayoffOn = []bool{false, false, false, false}
 			week.Top3Cache = [][]map[string]interface{}{}
+			week.SysBets = []int{0, 0, 0, 0}
 			c.Insert(week)
 		}
 	}
@@ -307,6 +309,9 @@ func FindSysWWAWeek() *SysWWAWeek {
 		week.Top3Cache = append(week.Top3Cache, cacheSample)
 		week.Top3Cache = append(week.Top3Cache, cacheSample)
 	}
+	if len(week.SysBets) == 0 {
+		week.SysBets = []int{0, 0, 0, 0}
+	}
 	return week
 }
 
@@ -316,6 +321,13 @@ func UpdateSysWWAWeek(sys *SysWWAWeek) {
 	defer s.Close()
 	c := s.DB(DB_NAME).C(COL_SYS_WWA_WEEK)
 	c.UpdateId(sys.Id, sys)
+}
+
+func (u *SysWWAWeek) UpdateGold() {
+	s := Session()
+	defer s.Close()
+	c := s.DB(DB_NAME).C(COL_SYS_WWA_WEEK)
+	c.UpdateId(u.Id, bson.M{"$set": bson.M{"sys_bets": u.SysBets}})
 }
 
 func IsWeekend() bool {

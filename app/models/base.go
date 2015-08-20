@@ -103,3 +103,42 @@ func WwaTypeToName(typeOfWwa int) string {
 		return "未知"
 	}
 }
+
+func RankToTitle(rank int) string {
+	switch rank {
+	case 1:
+		return "战神"
+	case 2:
+		return "勇士"
+	case 3:
+		return "精英"
+	default:
+		return "未知"
+	}
+}
+
+func RankToBuffAddStr(rank int) string {
+	switch rank {
+	case 1:
+		return "20%"
+	case 2:
+		return "15%"
+	case 3:
+		return "10%"
+	default:
+		return "0%"
+	}
+}
+
+func RankToBuffEndWeekendStr(rank int) string {
+	switch rank {
+	case 1:
+		return "3"
+	case 2:
+		return "4"
+	case 3:
+		return "5"
+	default:
+		return "6"
+	}
+}
