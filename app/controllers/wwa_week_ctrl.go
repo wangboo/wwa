@@ -199,6 +199,7 @@ func (w *WWAWeekCtrl) ShowTop20(selfWeek *models.UserWWAWeek, zoneId, userId, ty
 				info["score"] = 0
 			case models.TYPE_WWW_VIEW_BET_ENABLE:
 				info["score"] = week.Score
+				info["totle"] = models.FindBetSumByType(typeOfWwa)
 				// 对他的下注金额
 				info["gold"] = models.FindUserBetInUserSum(zoneId, userId, week.Id)
 			case models.TYPE_WWW_VIEW_FIGHT_IN:
