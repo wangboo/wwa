@@ -65,10 +65,12 @@ GET 	/www/niubest 				WWAWeekCtrl.Niubest
 GET 	/www/betSum 				BetCtrl.Sum
 # 下注
 GET 	/www/bet 						BetCtrl.Bet
-# 开赛
-GET 	/job/wwwBegin 			WWAWeekCtrl.BeginFight
-# 发奖
-GET 	/job/reward 				BetCtrl.SendMail
+# 开赛（测试）
+#GET 	/job/wwwBegin 			WWAWeekCtrl.BeginFight
+# 发奖（测试）
+#GET 	/job/reward 				BetCtrl.SendMail
+# 删除周积分（测试）
+#GET 	/job/deleteWeek 		BetCtrl.DeleteWeek
 
 # --------------消费查询------------------
 GET 	/payment 						App.Payment

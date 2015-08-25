@@ -33,3 +33,8 @@ func (b *BetCtrl) SendMail() revel.Result {
 	models.SendUserBetResultMail()
 	return b.RenderJson(Succ())
 }
+
+func (b *BetCtrl) DeleteWeek() revel.Result {
+	models.WwaTypeForeach(models.ResetScore)
+	return b.RenderText("ok")
+}

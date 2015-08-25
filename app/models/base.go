@@ -130,8 +130,8 @@ func RankToBuffAddStr(rank int) string {
 	}
 }
 
-func RankToBuffEndWeekendStr(rank int) string {
-	switch rank {
+func RankToBuffEndWeekendStr(typeOfWwa int) string {
+	switch typeOfWwa {
 	case 1:
 		return "3"
 	case 2:

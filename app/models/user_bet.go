@@ -258,7 +258,7 @@ func SendUserWWAWeekRewardMail(typeOfWwa int) {
 					rank,
 					RankToTitle(rank),
 					RankToBuffAddStr(rank),
-					RankToBuffEndWeekendStr(rank))
+					RankToBuffEndWeekendStr(typeOfWwa))
 				rankTitleNoticeUrl := gs.RankTitleNoticeUrl(typeOfWwa, rank, week.UserId)
 				revel.INFO.Println("rankTitleNoticeUrl = ", rankTitleNoticeUrl)
 				GetGameServer(rankTitleNoticeUrl)
