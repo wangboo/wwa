@@ -9,6 +9,7 @@ import (
 	"github.com/wangboo/wwa/app/models"
 	"io/ioutil"
 	"net/http"
+	"time"
 )
 
 // 获取每日竞技人员
@@ -65,12 +66,12 @@ func SaveDataByServerAndType(cli redis.Conn, s *models.GameServerConfig, t int) 
 		rank.ZoneName = s.Name
 		rank.Type = t
 		week, err := models.FindWWAWeekByZoneIdAndUserId(s.ZoneId, rank.UserId)
-		if err == nil {
+		if err == nil && time.Now().Weekday() < 5 && time.Now().Weekday() > 0 {
 			week.Type = t
 			week.Pow = rank.Pow
 			week.Save()
 		}
-		revel.INFO.Println("rank = ", rank)
+		// revel.INFO.Println("rank = ", rank)
 		cli.Do("ZADD", rank.ToRedisRankName(), models.RANK_SCORE_SUB, rank.ToSimpleKey())
 		cli.Do("HSET", "zone_user", rank.ToSimpleKey(), rank.ToDetailKey())
 	}
