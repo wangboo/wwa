@@ -250,13 +250,15 @@ func ResetScore(typeOfWwa int) {
 	s := Session()
 	defer s.Close()
 	colRec := s.DB(DB_NAME).C(COL_USER_WWA_WEEK_RECORD)
+	colWeek := s.DB(DB_NAME).C(COL_USER_WWA_WEEK)
 	list := UserWWAWeekTop20(typeOfWwa)
 	for _, r := range list {
 		r.CreatedAt = time.Now()
 		colRec.Insert(&r)
+		colWeek.RemoveId(r.Id)
 	}
-	colWeek := s.DB(DB_NAME).C(COL_USER_WWA_WEEK)
 	colWeek.RemoveAll(bson.M{"type": typeOfWwa})
+	revel.INFO.Println("ResetScore with type ", typeOfWwa)
 	sysWeek := FindSysWWAWeek()
 	sysWeek.SysBets = []int{0, 0, 0, 0}
 	UpdateSysWWAWeek(sysWeek)
@@ -314,7 +316,7 @@ func FindSysWWAWeek() *SysWWAWeek {
 	}
 	//revel.INFO.Println("sys_bets = ", week.SysBets)
 	if len(week.SysBets) == 0 {
-	//	revel.INFO.Println("init sys_bets")
+		//	revel.INFO.Println("init sys_bets")
 		week.SysBets = []int{0, 0, 0, 0}
 	}
 	return week

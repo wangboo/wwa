@@ -386,10 +386,10 @@ func CacheWWWTop3UserCache(typeOfWwa int, sys *SysWWAWeek, list []UserWWAWeek) {
 		}
 	}
 	sys.Top3Cache[typeOfWwa] = cacheList
-	cli := RedisPool.Get()
-	defer cli.Close()
-	cli.Do("SET", fmt.Sprintf("wwa_%d_first_rank", typeOfWwa))
 	if typeOfWwa == 3 {
+		cli := RedisPool.Get()
+		defer cli.Close()
+		cli.Do("SET", "wwa_3_first_rank", name)
 		BrocastToAllGameServer(func(gs *GameServerConfig) {
 			url := gs.WWWNiubestUserNameUrl(name)
 			GetGameServer(url)
