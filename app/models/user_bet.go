@@ -336,6 +336,9 @@ func SendUserBetResultMailByType(typeOfWwa int) {
 	}
 	// 回报比
 	rate := float64(totleBetGold) / float64(totleWinnerGold)
+	if rate > 10.0 {
+		rate = 10.0
+	}
 	rate = float64(int(rate*100)) / 100.0
 	revel.INFO.Println("totleWinnerGold = ", totleWinnerGold)
 	revel.INFO.Println("rate = ", rate)
