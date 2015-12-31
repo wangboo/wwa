@@ -93,6 +93,11 @@ GET 	/inv/code 					UserInvCtrl.Code
 # 待领取的任务个数
 GET 	/inv/showSize 			UserInvCtrl.ShowSize
 
+# 定时任务
+POST 	/cron/addScollMsg 		CronTabCtrl.AddScrollMsg
+GET 	/cron/list 				CronTabCtrl.List
+GET 	/cron/delete 			CronTabCtrl.Delete
+
 get /job/reloadGameServer User.InitGameServerConfig
 
 # Catch all

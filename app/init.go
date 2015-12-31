@@ -36,6 +36,10 @@ func init() {
 	revel.OnAppStart(models.InitBaseInvitation)
 	revel.OnAppStart(models.InitDatabase)
 	revel.OnAppStart(models.InitRedis)
+	// CronTab 初始化
+	revel.OnAppStart(models.InitCronTab)
+	// CronTab 增加滚动消息支持
+	revel.OnAppStart(models.InitScrollMsg)
 	revel.OnAppStart(func() {
 		// 日终竞技场排名清空
 		jobs.Schedule("0 15 4 * * ?", &mjob.RankDataJob{})

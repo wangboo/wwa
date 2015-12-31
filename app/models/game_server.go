@@ -81,7 +81,15 @@ func (g *GameServerConfig) CommonRewardMail(recv int, msg, reward string) string
 func (g *GameServerConfig) NoticeUrl(msg string) string {
 	msgBase64 := base64.StdEncoding.EncodeToString([]byte(msg))
 	msgBase64 = url.QueryEscape(msgBase64)
-	url := fmt.Sprintf("http://%s:%d/%s/admin/www/notice?msg=%s", g.Ip, g.Port, g.Domain, msgBase64)
+	url := fmt.Sprintf("http://%s:%d/%s/admin/www/notice?msg=", g.Ip, g.Port, g.Domain) + msgBase64
+	return url
+}
+
+func (g *GameServerConfig) NoticeAdvanceUrl(name, msg string) string {
+	msgBase64 := base64.StdEncoding.EncodeToString([]byte(msg))
+	nameBase64 := base64.StdEncoding.EncodeToString([]byte(name))
+	msgBase64 = url.QueryEscape(msgBase64)
+	url := fmt.Sprintf("http://%s:%d/%s/admin/www/notice?name=%s&msg=%s", g.Ip, g.Port, g.Domain, nameBase64, msgBase64)
 	return url
 }
 
