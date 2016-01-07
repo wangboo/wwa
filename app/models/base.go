@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"github.com/garyburd/redigo/redis"
 	"github.com/revel/revel"
 	"io/ioutil"
@@ -41,12 +42,14 @@ func PostFormGameServer(url string, data url.Values) ([]byte, error) {
 
 func InitDatabase() {
 	mongodbUrl, ok := revel.Config.String("mongodb")
+	fmt.Println("mongodbUrl = ", mongodbUrl)
 	if !ok {
 		panic("app.conf中找不到mongodb")
 	}
 	var err error
 	session, err = mgo.Dial(mongodbUrl)
 	if err != nil {
+		fmt.Print("mgo connect error", err)
 		panic(err)
 	}
 }
@@ -78,8 +81,8 @@ func Session() *mgo.Session {
 	return session.Clone()
 }
 
-func Col(session *mgo.Session, colName string) *mgo.Collection {
-	return session.DB(DB_NAME).C(colName)
+func Col(s *mgo.Session, colName string) *mgo.Collection {
+	return s.DB(DB_NAME).C(colName)
 }
 
 func WwaTypeForeach(fn func(int)) {

@@ -5,6 +5,7 @@ import (
 	"github.com/revel/modules/jobs/app/jobs"
 	"github.com/revel/revel"
 	// "github.com/wangboo/wwa/app/controllers"
+	"github.com/wangboo/wwa/app/chat"
 	"github.com/wangboo/wwa/app/jobs"
 	"github.com/wangboo/wwa/app/models"
 	"log"
@@ -55,6 +56,8 @@ func init() {
 		jobs.Schedule("10 0 21 * * 0", &mjob.WWWWeekFightEndJob{})
 		// 巅峰之夜数据清空
 		jobs.Schedule("1 1 0 * * 1", &mjob.WWWWeekCleanJob{})
+		// 聊天服务器
+		chat.Start(revel.Config.StringDefault("chat.host", ":10002"))
 	})
 }
 
