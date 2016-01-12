@@ -4,6 +4,7 @@ import (
 	// "fmt"
 	"github.com/revel/modules/jobs/app/jobs"
 	"github.com/revel/revel"
+	"github.com/wangboo/wwa/app/chat/proto"
 	// "github.com/wangboo/wwa/app/controllers"
 	"github.com/wangboo/wwa/app/chat"
 	"github.com/wangboo/wwa/app/jobs"
@@ -58,6 +59,8 @@ func init() {
 		jobs.Schedule("1 1 0 * * 1", &mjob.WWWWeekCleanJob{})
 		// 聊天服务器
 		chat.Start(revel.Config.StringDefault("chat.host", ":10002"))
+		chat.AddProtocol(proto.MessageId_Chat, chat.ChatProtocol{})
+		chat.AddProtocol(proto.MessageId_Behaviour_Log, chat.BehaviourProtocol{})
 	})
 }
 
