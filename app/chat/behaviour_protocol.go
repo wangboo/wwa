@@ -35,8 +35,8 @@ func (p BehaviourProtocol) HandleMsg(zoneId int32, bin []byte, conn net.Conn) (e
 		return
 	}
 	// 消息压入处理进程
-	fmt.Println("BehaviourProtocol HandleMsg push message\n", beh)
-	fmt.Println("zoneId = ", zoneId)
+	// fmt.Println("BehaviourProtocol HandleMsg push message\n", beh)
+	// fmt.Println("zoneId = ", zoneId)
 	behaviourJobChan <- behaviourData{beh: *beh, zoneId: zoneId}
 	return
 }
@@ -58,7 +58,7 @@ func handleBehaviour(data *behaviourData) {
 	// 		revel.ERROR.Println("handleBehaviour err", err)
 	// 	}
 	// }()
-	fmt.Printf("handleBehaviour, zoneId = %d, data.beh = %v \n", data.zoneId, data.beh.Type)
+	// fmt.Printf("handleBehaviour, zoneId = %d, data.beh = %v \n", data.zoneId, data.beh)
 	switch *(data.beh.Type) {
 	case proto.BehaviourType_CreateRole:
 		createUser(data.zoneId, data.beh.GetCreateRole())
@@ -70,6 +70,8 @@ func handleBehaviour(data *behaviourData) {
 		expChange(data.zoneId, data.beh.GetExp())
 	case proto.BehaviourType_Battle:
 		battleChange(data.zoneId, data.beh.GetBattle())
+	case proto.BehaviourType_Activity:
+		activityLog(data.zoneId, data.beh.GetActivity())
 	}
 }
 
@@ -92,4 +94,8 @@ func expChange(zoneId int32, exp *proto.BehaviourExp) {
 
 func battleChange(zoneId int32, battle *proto.BehaviourBattle) {
 	models.BattleChange(int(zoneId), int(battle.GetUserId()), int(battle.GetBattleId()))
+}
+
+func activityLog(zoneId int32, activity *proto.BehaviourActivity) {
+	models.ActivityLog(int(zoneId), int(activity.GetUserId()), int(activity.GetType()))
 }

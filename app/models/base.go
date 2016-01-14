@@ -52,6 +52,7 @@ func InitDatabase() {
 		fmt.Print("mgo connect error", err)
 		panic(err)
 	}
+	initBahaviourIndex()
 }
 
 // 初始化redis
