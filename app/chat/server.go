@@ -151,6 +151,12 @@ func process_socket(conn net.Conn) {
 	// 读取二进制数据
 	var bin []byte
 	var msgId proto.MessageId
+	defer func() {
+		if zoneId > 0 {
+			server.cli_quit_chan <- zoneId
+		}
+	}()
+	defer conn.Close()
 	for {
 		msgId, bin, err = readPkg(conn)
 		if err != nil {
@@ -185,8 +191,6 @@ func process_socket(conn net.Conn) {
 			break
 		}
 	}
-	server.cli_quit_chan <- zoneId
-	conn.Close()
 }
 
 // 处理消息包
@@ -213,22 +217,31 @@ func readPkg(conn net.Conn) (msgId proto.MessageId, bin []byte, err error) {
 	if err != nil {
 		return
 	}
-	fmt.Println("readPkg msgIdInt: ", msgIdInt)
+	// fmt.Println("readPkg msgIdInt: ", msgIdInt)
+	if _, ok := proto.MessageId_name[msgIdInt]; !ok {
+		err = fmt.Errorf("messageId(%d) error", msgIdInt)
+		return
+	}
 	msgId = proto.MessageId(msgIdInt)
 	if msgId == proto.MessageId_HeartBeat {
 		// 心跳报文，没有包长度和包体
 		return
 	}
+
 	// 读取包长度
 	binLen, err := readInt32(conn)
 	if err != nil {
 		return
 	}
-	fmt.Println("readPkg binLen: ", binLen)
+	if binLen > 2048 {
+		err = fmt.Errorf("binLen to long %d", binLen)
+		return
+	}
+	// fmt.Println("readPkg binLen: ", binLen)
 	// 读取包内容
 	bin = make([]byte, binLen)
 	_, err = io.ReadFull(conn, bin)
-	fmt.Println("readPkg bin: ", bin)
+	// fmt.Println("readPkg bin: ", bin)
 	return
 }
 
