@@ -164,7 +164,7 @@ func process_socket(conn net.Conn) {
 			revel.ERROR.Printf("reading conn error zoneId(%d), error: %v\n", zoneId, err)
 			break
 		}
-		fmt.Printf("recv client: ZoneId %d, msgId %v, bin %v \n", zoneId, msgId, bin)
+		// fmt.Printf("recv client: ZoneId %d, msgId %v, bin %v \n", zoneId, msgId, bin)
 		// 心跳
 		if msgId == proto.MessageId_HeartBeat {
 			continue
